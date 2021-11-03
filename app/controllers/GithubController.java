@@ -46,7 +46,7 @@ public class GithubController {
 		return ok(toJson(strings));
 	}
 
-	public CompletionStage<Result> getRepositoryDetailsRender(String userName, String repositoryName)
+	public CompletionStage<Result> getRepositoryDetails(String userName, String repositoryName)
 	{
 		CompletionStage<Result> resultCompletionStage = githubService
 				.getRepositoryDetails(userName, repositoryName)
