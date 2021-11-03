@@ -3,14 +3,14 @@ package services;
 import models.RepositoryDetails;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.User;
+
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
-import javax.inject.Inject;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
