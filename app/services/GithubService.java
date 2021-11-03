@@ -25,28 +25,10 @@ public class GithubService {
 
     public GithubService() {
         gitHubClient = new GitHubClient();
-        gitHubClient.setCredentials("ashraghunath","Bangalore@12345!");
         this.repositoryService=new RepositoryService(gitHubClient);
         this.collaboratorService=new CollaboratorService(gitHubClient);
         this.issueService=new IssueService(gitHubClient);
     }
-
-//    public CompletionStage<Repository> getRepositoryDetails(String userName, String repositoryName){
-//
-//        return CompletableFuture.supplyAsync( () -> {
-//            GitHubClient client = new GitHubClient();
-//            RepositoryService repositoryService = new RepositoryService(client);
-//
-//            Repository repository=null;
-//            try {
-//                repository = repositoryService.getRepository(userName, repositoryName);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            return repository;
-//        });
-//
-//    }
 
     public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName){
 
@@ -66,7 +48,6 @@ public class GithubService {
                 }
                 repositoryDetails.setRepository(repository);
                 repositoryDetails.setIssues(issues);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }

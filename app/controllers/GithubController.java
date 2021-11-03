@@ -46,21 +46,8 @@ public class GithubController {
 		return ok(toJson(strings));
 	}
 
-	public CompletionStage<Result> getRepositoryDetails(String userName, String repositoryName)
-	{
-
-		CompletionStage<Result> repositoryDetail = githubService
-				.getRepositoryDetails(userName, repositoryName)
-				.thenApply(repository -> ok(toJson(repository)));
-		return repositoryDetail;
-	}
-
-
-
-
 	public CompletionStage<Result> getRepositoryDetailsRender(String userName, String repositoryName)
 	{
-
 		CompletionStage<Result> resultCompletionStage = githubService
 				.getRepositoryDetails(userName, repositoryName)
 				.thenApply(repository -> ok(views.html.repository.render(repository)));
