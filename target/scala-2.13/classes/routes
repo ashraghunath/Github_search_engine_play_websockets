@@ -1,0 +1,21 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.GithubController.index
+
+#Github
++ nocsrf
+POST     /search                    controllers.GithubController.search(request: Request)
+
+
+GET      /getSearchResults          controllers.GithubController.getSearchResults
+
+GET      /getRepositoryDetailsRender/:userName/:repositoryName      controllers.GithubController.getRepositoryDetails(userName : String, repositoryName : String)
+
+GET      /getRepositoryIssues/:userName/:repositoryName      controllers.GithubController.getIssues(userName : String, repositoryName : String)
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

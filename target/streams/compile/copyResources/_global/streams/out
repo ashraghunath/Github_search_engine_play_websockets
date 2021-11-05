@@ -1,0 +1,4 @@
+[0m[[0m[0mdebug[0m] [0m[0mCopy resource mappings: [0m
+[0m[[0m[0mdebug[0m] [0m[0m	(C:\Users\Admin\Downloads\KP_G05-master\KP_G05-master\conf\application.conf,C:\Users\Admin\Downloads\KP_G05-master\KP_G05-master\target\scala-2.13\classes\application.conf)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(C:\Users\Admin\Downloads\KP_G05-master\KP_G05-master\conf\logback.xml,C:\Users\Admin\Downloads\KP_G05-master\KP_G05-master\target\scala-2.13\classes\logback.xml)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(C:\Users\Admin\Downloads\KP_G05-master\KP_G05-master\conf\routes,C:\Users\Admin\Downloads\KP_G05-master\KP_G05-master\target\scala-2.13\classes\routes)[0m

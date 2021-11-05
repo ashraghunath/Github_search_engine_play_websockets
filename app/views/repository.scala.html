@@ -2,7 +2,6 @@
 
 @main("Repository") {
 
-
 <div class="container">
     <div class="jumbotron jumbotron-fluid">
         <h3>Repository Details</h3>
@@ -37,7 +36,7 @@
         </thead>
         <tbody>
         @for(issue <- repositoryDetails.getIssues()) {
-        <tr><td>@issue.getTitle()</td><td>@issue.getCreatedAt()</td><td>@issue.getState()</td><td><a href="@issue.getUrl()">@issue.getUrl()</a></td></tr>
+        <tr><td>@issue.getTitle()</td><td>@issue.getCreatedAt()</td><td>@issue.getState()</td><td><a href="@issue.getHtmlUrl()">@issue.getHtmlUrl()</a></td></tr>
         }
         </tbody>
     </table>
