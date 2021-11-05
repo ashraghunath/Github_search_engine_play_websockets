@@ -7,6 +7,10 @@ import org.eclipse.egit.github.core.User;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the object to be displayed on the page - Repository profile
+ * @author Ashwin Raghunath 40192120
+ */
 public class RepositoryDetails {
     private Repository repository;
     private List<User> collaborators;
@@ -16,13 +20,6 @@ public class RepositoryDetails {
         this.collaborators=new ArrayList<>();
         this.issues=new ArrayList<>();
     }
-
-    public RepositoryDetails(Repository repository, List<User> collaborators, List<Issue> issues) {
-        this.repository = repository;
-        this.collaborators = collaborators;
-        this.issues = issues;
-    }
-
 
     public Repository getRepository() {
         return repository;

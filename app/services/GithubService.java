@@ -18,10 +18,10 @@ import java.util.concurrent.CompletionStage;
 
 public class GithubService {
 
-    private final RepositoryService repositoryService;
-    private final CollaboratorService collaboratorService;
-    private final IssueService issueService;
-    private final GitHubClient gitHubClient;
+    private RepositoryService repositoryService;
+    private CollaboratorService collaboratorService;
+    private IssueService issueService;
+    private GitHubClient gitHubClient;
 
     public GithubService() {
         gitHubClient = new GitHubClient();
@@ -30,6 +30,12 @@ public class GithubService {
         this.issueService=new IssueService(gitHubClient);
     }
 
+    /** Returns the Repository details for the provided username and repository name
+     * @author Ashwin Raghunath 40192120
+     * @param userName the user who owns the repository.
+     * @param repositoryName the name of the repository to be searched for.
+     * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
+     */
     public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName){
 
         return CompletableFuture.supplyAsync( () -> {
@@ -42,7 +48,7 @@ public class GithubService {
                 PageIterator<Issue> iterator = issueService.pageIssues(userName, repositoryName,
                         params, 1);
                 List<Issue> issues = new ArrayList<>();
-                while(iterator.hasNext() && issues.size()!=20)
+                while(iterator!=null && iterator.hasNext() && issues.size()!=20)
                 {
                     issues.add(iterator.next().iterator().next());
                 }

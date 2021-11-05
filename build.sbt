@@ -10,11 +10,10 @@ testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
 
 libraryDependencies += guice
 
-// https://mvnrepository.com/artifact/org.eclipse.mylyn.github/org.eclipse.egit.github.core
-libraryDependencies += "org.eclipse.mylyn.github" % "org.eclipse.egit.github.core" % "2.1.5"
 
 libraryDependencies ++= Seq(
-  "org.eclipse.mylyn.github" % "org.eclipse.egit.github.core" % "2.1.5"
+  "org.eclipse.mylyn.github" % "org.eclipse.egit.github.core" % "2.1.5",
+  "org.mockito" % "mockito-core" % "2.10.0" % "test"
 )
 
 // disabled until https://github.com/playframework/playframework/issues/9845 is solved
