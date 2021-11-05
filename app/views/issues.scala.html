@@ -1,0 +1,39 @@
+  @(issues: IssueWordStatistics)
+
+  @main("Welcome to Play") {
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  
+
+</head>
+<body>
+<div class="container">
+  <div class="jumbotron">
+    <h1 >Gitterific</h1>
+  </div>
+</div>
+<div class="container">
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th scope="col">Issue Keyword</th>
+      <th scope="col">Count</th>
+    </tr>
+  </thead>
+  <tbody>
+  @for((key, value) <- issues.getWordfrequency()) {
+    <tr>
+      
+      <td>@key </td>
+      <td>@value </td>
+    </tr>
+  }
+</tbody>
+</table>
+</div>
+</body>
+</html>
+
+  }

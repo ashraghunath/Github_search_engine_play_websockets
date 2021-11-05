@@ -1,0 +1,32 @@
+@()
+
+  @main("Welcome to Play") {
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <script language="JavaScript">
+    function showInput() {
+        document.getElementById('display').innerHTML =
+                    document.getElementById("user_input").value;
+    }
+  </script>
+
+</head>
+<body>
+<div class="container">
+  <div class="jumbotron">
+    <h1 >Gitterific</h1>
+  </div>
+</div>
+<div class="container">
+    <form action="@routes.GithubController.search()" method="post">
+      <input type="text" class="input-lg" name="phrase">
+      <button class="btn btn-info"><span class="glyphicon glyphicon-search"></span>Search</button>
+    </form>
+
+</div>
+</body>
+</html>
+
+  }
