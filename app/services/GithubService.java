@@ -43,18 +43,14 @@ public class GithubService {
 	 */
 	public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName) {
 
-		return CompletableFuture.supplyAsync(() -> {
+		return CompletableFuture.supplyAsync( () -> {
 			RepositoryDetails repositoryDetails = new RepositoryDetails();
-			Repository repository = null;
+			Repository repository=null;
 			Map<String, String> params = new HashMap<String, String>();
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
 				repository = repositoryService.getRepository(userName, repositoryName);
-				PageIterator<Issue> iterator = issueService.pageIssues(userName, repositoryName, params, 1);
-				List<Issue> issues = new ArrayList<>();
-				while (iterator != null && iterator.hasNext() && issues.size() != 20) {
-					issues.add(iterator.next().iterator().next());
-				}
+				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().limit(20).collect(Collectors.toList());
 				repositoryDetails.setRepository(repository);
 				repositoryDetails.setIssues(issues);
 			} catch (IOException e) {
