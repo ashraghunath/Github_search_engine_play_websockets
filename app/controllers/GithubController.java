@@ -54,7 +54,15 @@ public class GithubController {
 				.thenApply(repository -> ok(views.html.repository.render(repository)));
 		return resultCompletionStage;
 	}
-
+	/**
+	 * Returns the Repository Issues for the provided username and repository name
+	 * 
+	 * @author Anushka Shetty 40192371
+	 * @param userName       the user who owns the repository.
+	 * @param repositoryName the name of the repository to be searched for.
+	 * @return CompletionStage<Result> represents the async response containing the
+	 *         process stage of Result object
+	 */
 	public CompletionStage<Result> getIssues(String userName, String repositoryName) {
 		CompletionStage<Result> resultCompletionStage = githubService.getAllIssues(userName, repositoryName)
 				.thenApply(issues -> ok(views.html.issues.render(issues)));
