@@ -87,6 +87,9 @@ public class GithubService {
 
 		 return supplyAsync (()->{
 
+			 String[] listCommonWords = {"the", "a", "an", "are", "and","not", "be","for","on", "to"};
+			 Set<String> commonWords = new HashSet<>(Arrays.asList(listCommonWords));  
+
 		// Converting Issue list into list of strings
 		List<String> newList = new ArrayList<>(issues.size());
 		for (Issue issue : issues) {
@@ -94,7 +97,7 @@ public class GithubService {
 		}
 
 		// Splitting words
-		List<String> list = Stream.of(newList.toString()).map(w -> w.split("\\s+")).flatMap(Arrays::stream)
+		List<String> list = Stream.of(newList.toString()).map(w -> w.split("\\s+")).flatMap(Arrays::stream).filter(q -> !commonWords.contains(q))
 				.collect(Collectors.toList());
 
 		// Mapping words with their frequency
