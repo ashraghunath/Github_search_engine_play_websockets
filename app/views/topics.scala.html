@@ -1,0 +1,29 @@
+@(repositories: SearchedRepositoryDetails)
+
+@main("Repository") {
+
+<div class="container">
+    <div class="jumbotron jumbotron-fluid">
+        <h3>Repository Details</h3>
+    </div>
+</div>
+
+<div class="container">
+
+    <table class="table">
+        <thead>
+        <tr><th>User</th><th>RepositoryName</th><th>Location</th>
+        </thead>
+        <tbody>
+        @for(repo <- repositories.getRepo()) {
+        <tr><td>@repo.getName()</td><td>@repo.getOwner()</td><td><a href="@repo.getUrl()">@repo.getUrl()</a></td></tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+
+
+<hr/>
+
+}
