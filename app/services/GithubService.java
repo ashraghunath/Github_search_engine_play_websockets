@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,26 +70,26 @@ public class GithubService {
 	public CompletionStage<IssueWordStatistics> getAllIssues(String userName, String repositoryName) {
 		return CompletableFuture.supplyAsync(() -> {
 			List<Issue> issues = new ArrayList<Issue>();
-			IssueWordStatistics issueWordStatistics = null;
 			Map<String, String> parameters = new HashMap<>();
 			parameters.put(IssueService.FILTER_STATE, IssueService.STATE_CLOSED);
 			parameters.put(IssueService.FILTER_STATE, IssueService.STATE_OPEN);
 
 			try {
 				issues = issueService.getIssues(userName, repositoryName, parameters);
-				System.out.println("Size " + issues.size());
-				issueWordStatistics = getWordLevelStatistics(issues);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return issueWordStatistics;
-		});
+			return issues;
+		}).thenComposeAsync(issues -> getWordLevelStatistics(issues));
 	}
 
-	public IssueWordStatistics getWordLevelStatistics(final List<Issue> issues) {
+	public CompletableFuture<IssueWordStatistics> getWordLevelStatistics(final List<Issue> issues) {
 
-		// return supplyAsync (()->{
+		 return supplyAsync (()->{
+
+			 String[] listCommonWords = {"the", "a", "an", "are", "and","not", "be","for","on", "to"};
+			 Set<String> commonWords = new HashSet<>(Arrays.asList(listCommonWords));  
 
 		// Converting Issue list into list of strings
 		List<String> newList = new ArrayList<>(issues.size());
@@ -97,7 +98,7 @@ public class GithubService {
 		}
 
 		// Splitting words
-		List<String> list = Stream.of(newList.toString()).map(w -> w.split("\\s+")).flatMap(Arrays::stream)
+		List<String> list = Stream.of(newList.toString()).map(w -> w.split("\\s+")).flatMap(Arrays::stream).filter(q -> !commonWords.contains(q))
 				.collect(Collectors.toList());
 
 		// Mapping words with their frequency
@@ -109,7 +110,7 @@ public class GithubService {
 				.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 		return new IssueWordStatistics(wordsCountMap);
-		// });
+		 });
 	}
 
 	public CompletionStage<UserDetails> getUserDetails(String userName) {
