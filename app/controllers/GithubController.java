@@ -70,4 +70,10 @@ public class GithubController {
 		return resultCompletionStage;
 	}
 
+	public CompletionStage<Result> getUserDetails(String userName){
+		CompletionStage<Result> result = githubService.getUserDetails(userName)
+				.thenApply(user -> ok(views.html.user.render(user)));
+		return result;
+	}
+
 }

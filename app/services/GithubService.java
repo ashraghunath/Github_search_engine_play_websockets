@@ -2,14 +2,17 @@ package services;
 
 import models.IssueWordStatistics;
 import models.RepositoryDetails;
+import models.UserDetails;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,12 +28,14 @@ public class GithubService {
 	private CollaboratorService collaboratorService;
 	private IssueService issueService;
 	private GitHubClient gitHubClient;
+	private UserService userService;
 
 	public GithubService() {
 		gitHubClient = new GitHubClient();
 		this.repositoryService = new RepositoryService(gitHubClient);
 		this.collaboratorService = new CollaboratorService(gitHubClient);
 		this.issueService = new IssueService(gitHubClient);
+		this.userService = new UserService(gitHubClient);
 	}
 
 	/**
@@ -44,18 +49,14 @@ public class GithubService {
 	 */
 	public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName) {
 
-		return CompletableFuture.supplyAsync(() -> {
+		return CompletableFuture.supplyAsync( () -> {
 			RepositoryDetails repositoryDetails = new RepositoryDetails();
-			Repository repository = null;
+			Repository repository=null;
 			Map<String, String> params = new HashMap<String, String>();
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
 				repository = repositoryService.getRepository(userName, repositoryName);
-				PageIterator<Issue> iterator = issueService.pageIssues(userName, repositoryName, params, 1);
-				List<Issue> issues = new ArrayList<>();
-				while (iterator != null && iterator.hasNext() && issues.size() != 20) {
-					issues.add(iterator.next().iterator().next());
-				}
+				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().limit(20).collect(Collectors.toList());
 				repositoryDetails.setRepository(repository);
 				repositoryDetails.setIssues(issues);
 			} catch (IOException e) {
@@ -110,6 +111,27 @@ public class GithubService {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 		return new IssueWordStatistics(wordsCountMap);
 		 });
+	}
+
+	public CompletionStage<UserDetails> getUserDetails(String userName) {
+		return CompletableFuture.supplyAsync( () -> {
+			UserDetails userDetails = new UserDetails();
+			User user=null;
+			List<Repository> repositories = null;
+			Map<String, String> params = new HashMap<String, String>();
+			params.put(RepositoryService.TYPE_ALL, "all");
+			try {
+				user = userService.getUser(userName);
+				repositories = repositoryService.getRepositories(userName).stream().limit(10).collect(Collectors.toList());
+				//userDetails.setUser(user);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			userDetails.setRepository(repositories);
+			userDetails.setUser(user);
+			return userDetails;
+		});
 	}
 
 }
