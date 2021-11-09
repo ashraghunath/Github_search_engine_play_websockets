@@ -26,18 +26,16 @@ public class GithubController {
 	}
 
 	public Result index() {
-		return ok(views.html.index.render());
+		return ok(views.html.index.render(null));
 	}
 
-	public Result search(Http.Request request) {
+	public CompletionStage<Result> search(Http.Request request) {
 		DynamicForm form = formFactory.form().bindFromRequest(request);
 		String phrase = form.get("phrase");
-		return ok(views.html.index.render());
-	}
-
-	public Result getSearchResults() {
-		List<String> strings = Arrays.asList("value1", "value2", "value3");
-		return ok(toJson(strings));
+		CompletionStage<Result> resultCompletionStage = githubService
+					.searchResults(phrase)
+					.thenApply(map -> ok(views.html.index.render(map)));
+		return resultCompletionStage;
 	}
 
 	/**

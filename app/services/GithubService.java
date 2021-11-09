@@ -3,9 +3,11 @@ package services;
 import models.IssueWordStatistics;
 import models.RepositoryDetails;
 import models.UserDetails;
+import models.UserRepositoryTopics;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 
+import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
@@ -29,6 +31,8 @@ public class GithubService {
 	private IssueService issueService;
 	private GitHubClient gitHubClient;
 	private UserService userService;
+	private List<SearchRepository> searchRepositoryList;
+	Map<String,List<UserRepositoryTopics>> searchMap = new LinkedHashMap<>();
 
 	public GithubService() {
 		gitHubClient = new GitHubClient();
@@ -131,6 +135,32 @@ public class GithubService {
 			userDetails.setRepository(repositories);
 			userDetails.setUser(user);
 			return userDetails;
+		});
+	}
+
+	public CompletionStage<Map<String,List<UserRepositoryTopics>>> searchResults(String phrase)
+	{
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+					searchRepositoryList = repositoryService
+							.searchRepositories(phrase, 0)
+							.stream()
+							.sorted(Comparator.comparing(SearchRepository::getCreatedAt).reversed())
+							.limit(10)
+							.collect(Collectors.toList());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
+			for (SearchRepository searchRepository : searchRepositoryList) {
+				UserRepositoryTopics userRepositoryTopics =
+						new UserRepositoryTopics(searchRepository.getOwner(), searchRepository.getName());
+				//Todo get topics from service
+				userRepositoryTopics.setTopics(Arrays.asList("java","android","framework"));
+				userRepositoryTopicsList.add(userRepositoryTopics);
+			}
+			searchMap.put(phrase,userRepositoryTopicsList);
+			return searchMap;
 		});
 	}
 

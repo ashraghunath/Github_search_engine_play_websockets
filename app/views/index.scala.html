@@ -1,16 +1,44 @@
-@()
+@(searchMap : Map[String,List[UserRepositoryTopics]])
 
   @main("Welcome to Play") {
-<div class="container">
-  <div class="jumbotron jumbotron-fluid">
-    <h1 >Gitterific</h1>
-  </div>
+<div class=".container-fluid">
+        <div class="jumbotron jumbotron-fluid">
+            <h1 id="mainBanner" >Gitterific</h1>
+        </div>
 </div>
 <div class="container">
+    <div id="form-center">
     <form action="@routes.GithubController.search()" method="post">
       <input type="text" class="input-lg" name="phrase">
       <button class="btn btn-info"><span class="glyphicon glyphicon-search"></span>Search</button>
     </form>
+    </div>
 
+    @if(searchMap != null && searchMap.size > 0) {
+        @for((phrase, userRepositoryTopicsList) <- searchMap) {
+        <dl class="row">
+            <dt class="col-sm-3"><h4>Search term : </h4></dt>
+            <dd class="col-sm-9"><h4>@phrase</h4></dd>
+        </dl>
+
+        <table class="table">
+            <thead class="thead-light">
+                <tr><th>User</th><th>Repository</th><th>Topics</th>
+            </thead>
+            <tbody>
+            @for( userRepositoryTopics <- userRepositoryTopicsList ) {
+                <tr><td><a href="/getUserDetails/@userRepositoryTopics.getOwner()">@userRepositoryTopics.getOwner()</a></td><td><a href="/getRepositoryDetails/@userRepositoryTopics.getOwner()/@userRepositoryTopics.getName()">@userRepositoryTopics.getName()</a></td>
+                <td>
+                    @for(topic <- userRepositoryTopics.getTopics()) {
+                        @topic
+                    }
+                </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        }
+    }
 </div>
-  }
+}
+
