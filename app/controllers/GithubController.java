@@ -74,4 +74,17 @@ public class GithubController {
 		return result;
 	}
 
+	/** Returns the Repositories that contains the given topic
+	 * @author Trusha Patel
+	 * @param topic_name of the repository
+	 * @return CompletionStage<Result> represents the async response containing the process stage of Result object
+	 */
+
+	public CompletionStage<Result> getReposByTopics(String topic_name) {
+		CompletionStage<Result> resultCompletionStage = githubService.getRepositoriesByTopics(topic_name)
+				.thenApply(repositories -> ok(views.html.topics.render(repositories)));
+
+		return resultCompletionStage;
+	}
+
 }

@@ -1,9 +1,6 @@
 package services;
 
-import models.IssueWordStatistics;
-import models.RepositoryDetails;
-import models.UserDetails;
-import models.UserRepositoryTopics;
+import models.*;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 
@@ -163,5 +160,37 @@ public class GithubService {
 			return searchMap;
 		});
 	}
+
+	/**
+	 * @author Trusha Patel
+	 * @param topic_name The query topic
+	 * @return CompletionStage<SearchedRepositoryDetails> represents the async response containing the process stage of SearchedRepositoryDetails object
+	 */
+
+	public CompletionStage<SearchedRepositoryDetails> getRepositoriesByTopics(String topic_name){
+
+
+		return CompletableFuture.supplyAsync( () -> {
+			Map<String, String> searchQuery = new HashMap<String, String>();
+			RepositoryService service = new RepositoryService(gitHubClient);
+
+			SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
+			searchQuery.put("topic", topic_name);
+			List<SearchRepository> searchRes = null;
+			try {
+				searchRes = service.searchRepositories(searchQuery);
+				searchResDetails.setRepos(searchRes.subList(0, searchRes.size()<10 ? searchRes.size() : 10));
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			System.out.println("Search result "+searchRes.toString());
+			return searchResDetails;
+
+		});
+
+	}
+
 
 }
