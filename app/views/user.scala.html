@@ -1,0 +1,41 @@
+@(userDetails: UserDetails)
+
+@main("User"){
+
+<div class="container">
+  <div class="jumbotron jumbotron-fluid">
+    <h3>User Details</h3>
+  </div>
+</div>
+
+<div class="container">
+  <dl class="row">
+    <dt class="col-sm-3"><h4>User ID</h4></dt>
+    <dd class="col-sm-9"><h4>@userDetails.getUser().getLogin()</h4></dd>
+
+    <dt class="col-sm-3"><h4>Public Repos</h4></dt>
+    <dd class="col-sm-9"><h4>@userDetails.getUser().getPublicRepos()</h4></dd>
+
+    <dt class="col-sm-3"><h4>User URL</h4></dt>
+    <dd class="col-sm-9"><h4><a href="@userDetails.getUser().getHtmlUrl()">@userDetails.getUser().getHtmlUrl()</a></h4></dd>
+
+    </dd>
+  </dl>
+
+  <table class="table">
+    <thead>
+    <tr><th>Name</th><th>Created At</th><th>URL</th>
+    </thead>
+    <tbody>
+    @for(repository <- userDetails.getRepository()) {
+    <tr><td>@repository.getName()</td><td>@repository.getCreatedAt()</td><td><a href="@repository.getHtmlUrl()">@repository.getHtmlUrl()</a></td></tr>
+    }
+    </tbody>
+  </table>
+
+</div>
+
+
+
+<hr/>
+}

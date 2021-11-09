@@ -9,6 +9,7 @@ GET     /                           controllers.GithubController.index
 + nocsrf
 POST     /search                    controllers.GithubController.search(request: Request)
 
+GET      /getUserDetails/:userName      controllers.GithubController.getUserDetails(userName: String)
 
 GET      /getRepositoryDetails/:userName/:repositoryName      controllers.GithubController.getRepositoryDetails(userName : String, repositoryName : String)
 GET      /getRepositoryIssues/:userName/:repositoryName      controllers.GithubController.getIssues(userName : String, repositoryName : String)
