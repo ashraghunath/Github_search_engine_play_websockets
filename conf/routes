@@ -3,7 +3,7 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.GithubController.index
+GET     /                           controllers.GithubController.index(request: Request)
 
 #Github
 + nocsrf

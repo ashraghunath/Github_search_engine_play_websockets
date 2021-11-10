@@ -8,7 +8,10 @@ import services.GithubService;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
 import static play.libs.Json.toJson;
@@ -25,16 +28,17 @@ public class GithubController {
 		this.githubService = githubService;
 	}
 
-	public Result index() {
-		return ok(views.html.index.render(null));
+	public Result index(Http.Request request) {
+		UUID uuid = UUID.randomUUID();
+		String sessionKey = uuid.toString();
+		return ok(views.html.index.render(null)).addingToSession(request, "key", sessionKey);
 	}
 
 	public CompletionStage<Result> search(Http.Request request) {
 		DynamicForm form = formFactory.form().bindFromRequest(request);
 		String phrase = form.get("phrase");
 		CompletionStage<Result> resultCompletionStage = githubService
-					.searchResults(phrase)
-					.thenApply(map -> ok(views.html.index.render(map)));
+				.searchResults(request.session().get("key"), phrase).thenApply(map -> ok(views.html.index.render(map)));
 		return resultCompletionStage;
 	}
 
@@ -52,6 +56,7 @@ public class GithubController {
 				.thenApply(repository -> ok(views.html.repository.render(repository)));
 		return resultCompletionStage;
 	}
+
 	/**
 	 * Returns the Repository Issues for the provided username and repository name
 	 * 
@@ -73,7 +78,6 @@ public class GithubController {
 				.thenApply(user -> ok(views.html.user.render(user)));
 		return result;
 	}
-
 	/** Returns the Repositories that contains the given topic
 	 * @author Trusha Patel
 	 * @param topic_name of the repository
