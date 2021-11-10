@@ -29,6 +29,8 @@ public class GithubService {
 	private IssueService issueService;
 	private GitHubClient gitHubClient;
 	private UserService userService;
+	private List<SearchRepository> searchRepositoryList;
+	Map<Optional<String>, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
 
 	public GithubService() {
 		gitHubClient = new GitHubClient();
@@ -49,14 +51,15 @@ public class GithubService {
 	 */
 	public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName) {
 
-		return CompletableFuture.supplyAsync( () -> {
+		return CompletableFuture.supplyAsync(() -> {
 			RepositoryDetails repositoryDetails = new RepositoryDetails();
-			Repository repository=null;
+			Repository repository = null;
 			Map<String, String> params = new HashMap<String, String>();
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
 				repository = repositoryService.getRepository(userName, repositoryName);
-				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().limit(20).collect(Collectors.toList());
+				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().limit(20)
+						.collect(Collectors.toList());
 				repositoryDetails.setRepository(repository);
 				repositoryDetails.setIssues(issues);
 			} catch (IOException e) {
@@ -66,6 +69,17 @@ public class GithubService {
 		});
 
 	}
+
+	/**
+	 * Returns the Word level Statistics for all Issues for the provided username
+	 * and repository name
+	 * 
+	 * @author Anushka Shetty 40192371
+	 * @param userName       the user who owns the repository.
+	 * @param repositoryName the name of the repository to be searched for.
+	 * @return CompletionStage<IssueWordStatistics> represents the async response
+	 *         containing the process stage of IssueWordStatistics object
+	 */
 
 	public CompletionStage<IssueWordStatistics> getAllIssues(String userName, String repositoryName) {
 		return CompletableFuture.supplyAsync(() -> {
@@ -84,18 +98,31 @@ public class GithubService {
 		}).thenComposeAsync(issues -> getWordLevelStatistics(issues));
 	}
 
+	/**
+	 * Returns the Word level Statistics for all Issues for the provided username
+	 * and repository name
+	 * 
+	 * @author Anushka Shetty 40192371
+	 * @param List<Issue> List of all the issues for the given username and
+	 *                    repository name
+	 * @return CompletableFuture<IssueWordStatistics> represents the async response
+	 *         containing the process stage of IssueWordStatistics object
+	 */
 	public CompletableFuture<IssueWordStatistics> getWordLevelStatistics(final List<Issue> issues) {
 
-		 return supplyAsync (()->{
+		return supplyAsync(() -> {
+
 
 			 String[] listCommonWords = {"the", "a", "an", "are", "and","not", "be","for","on", "to","of"};
 			 Set<String> commonWords = new HashSet<>(Arrays.asList(listCommonWords));  
 
-		// Converting Issue list into list of strings
-		List<String> newList = new ArrayList<>(issues.size());
-		for (Issue issue : issues) {
-			newList.add(String.valueOf(issue.getTitle()));
-		}
+
+			// Converting Issue list into list of strings
+			List<String> newList = new ArrayList<>(issues.size());
+			for (Issue issue : issues) {
+				newList.add(String.valueOf(issue.getTitle()));
+			}
+
 
 		// Splitting words
 		List<String> list = (newList).stream().map(w -> w.trim().split("\\s+")).flatMap(Arrays::stream).filter(q -> !commonWords.contains(q))
@@ -104,25 +131,27 @@ public class GithubService {
 		Map<String, Integer> wordsCountMap = list.stream().map(eachWord -> eachWord)
 				.collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
 
-		// Sorting the result in descending order
-		wordsCountMap = wordsCountMap.entrySet().stream()
-				.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-		return new IssueWordStatistics(wordsCountMap);
-		 });
+
+			// Sorting the result in descending order
+			wordsCountMap = wordsCountMap.entrySet().stream()
+					.sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).collect(Collectors
+							.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+			return new IssueWordStatistics(wordsCountMap);
+		});
 	}
 
 	public CompletionStage<UserDetails> getUserDetails(String userName) {
-		return CompletableFuture.supplyAsync( () -> {
+		return CompletableFuture.supplyAsync(() -> {
 			UserDetails userDetails = new UserDetails();
-			User user=null;
+			User user = null;
 			List<Repository> repositories = null;
 			Map<String, String> params = new HashMap<String, String>();
 			params.put(RepositoryService.TYPE_ALL, "all");
 			try {
 				user = userService.getUser(userName);
-				repositories = repositoryService.getRepositories(userName).stream().limit(10).collect(Collectors.toList());
-				//userDetails.setUser(user);
+				repositories = repositoryService.getRepositories(userName).stream().limit(10)
+						.collect(Collectors.toList());
+				// userDetails.setUser(user);
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -132,5 +161,69 @@ public class GithubService {
 			return userDetails;
 		});
 	}
+
+
+	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResults(Optional<String> session,
+			String phrase) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				searchRepositoryList = repositoryService.searchRepositories(phrase, 0).stream()
+						.sorted(Comparator.comparing(SearchRepository::getCreatedAt).reversed()).limit(10)
+						.collect(Collectors.toList());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
+			for (SearchRepository searchRepository : searchRepositoryList) {
+				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
+						searchRepository.getName());
+				// Todo get topics from service
+
+				userRepositoryTopics.setTopics(Arrays.asList("java", "android", "framework"));
+				userRepositoryTopicsList.add(userRepositoryTopics);
+			}
+			Map<String, List<UserRepositoryTopics>> phraseList = searchSessionMap.get(session) != null
+					? searchSessionMap.get(session)
+					: new LinkedHashMap<>();
+			phraseList.put(phrase, userRepositoryTopicsList);
+			searchSessionMap.put(session, phraseList);
+			Map<String, List<UserRepositoryTopics>> searchMap = new LinkedHashMap<>();
+			searchMap.putAll(searchSessionMap.get(session));
+			return searchMap;
+		});
+	}
+
+	/**
+	 * @author Trusha Patel
+	 * @param topic_name The query topic
+	 * @return CompletionStage<SearchedRepositoryDetails> represents the async
+	 *         response containing the process stage of SearchedRepositoryDetails
+	 *         object
+	 */
+
+	public CompletionStage<SearchedRepositoryDetails> getRepositoriesByTopics(String topic_name) {
+
+		return CompletableFuture.supplyAsync(() -> {
+			Map<String, String> searchQuery = new HashMap<String, String>();
+			RepositoryService service = new RepositoryService(gitHubClient);
+
+			SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
+			searchQuery.put("topic", topic_name);
+			List<SearchRepository> searchRes = null;
+			try {
+				searchRes = service.searchRepositories(searchQuery);
+				searchResDetails.setRepos(searchRes.subList(0, searchRes.size() < 10 ? searchRes.size() : 10));
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			System.out.println("Search result " + searchRes.toString());
+			return searchResDetails;
+
+		});
+
+	}
+
 
 }
