@@ -26,18 +26,16 @@ public class GithubController {
 	}
 
 	public Result index() {
-		return ok(views.html.index.render());
+		return ok(views.html.index.render(null));
 	}
 
-	public Result search(Http.Request request) {
+	public CompletionStage<Result> search(Http.Request request) {
 		DynamicForm form = formFactory.form().bindFromRequest(request);
 		String phrase = form.get("phrase");
-		return ok(views.html.index.render());
-	}
-
-	public Result getSearchResults() {
-		List<String> strings = Arrays.asList("value1", "value2", "value3");
-		return ok(toJson(strings));
+		CompletionStage<Result> resultCompletionStage = githubService
+					.searchResults(phrase)
+					.thenApply(map -> ok(views.html.index.render(map)));
+		return resultCompletionStage;
 	}
 
 	/**
@@ -74,6 +72,19 @@ public class GithubController {
 		CompletionStage<Result> result = githubService.getUserDetails(userName)
 				.thenApply(user -> ok(views.html.user.render(user)));
 		return result;
+	}
+
+	/** Returns the Repositories that contains the given topic
+	 * @author Trusha Patel
+	 * @param topic_name of the repository
+	 * @return CompletionStage<Result> represents the async response containing the process stage of Result object
+	 */
+
+	public CompletionStage<Result> getReposByTopics(String topic_name) {
+		CompletionStage<Result> resultCompletionStage = githubService.getRepositoriesByTopics(topic_name)
+				.thenApply(repositories -> ok(views.html.topics.render(repositories)));
+
+		return resultCompletionStage;
 	}
 
 }
