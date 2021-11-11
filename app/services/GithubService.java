@@ -7,13 +7,17 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
+import org.json.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -37,6 +41,7 @@ public class GithubService {
 		this.collaboratorService = new CollaboratorService(gitHubClient);
 		this.issueService = new IssueService(gitHubClient);
 		this.userService = new UserService(gitHubClient);
+		gitHubClient.setCredentials("trushap2198", "Hold$123");
 	}
 
 	/**
@@ -148,12 +153,13 @@ public class GithubService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
+			List<UserRepositoryTopics> userRepositoryTopicsList =
+					new ArrayList<>();
 			for (SearchRepository searchRepository : searchRepositoryList) {
 				UserRepositoryTopics userRepositoryTopics =
 						new UserRepositoryTopics(searchRepository.getOwner(), searchRepository.getName());
-				//Todo get topics from service
-				userRepositoryTopics.setTopics(Arrays.asList("java","android","framework"));
+
+				userRepositoryTopics.setTopics(getTopics(searchRepository.getOwner(),searchRepository.getName()));
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
 			searchMap.put(phrase,userRepositoryTopicsList);
@@ -178,17 +184,42 @@ public class GithubService {
 			searchQuery.put("topic", topic_name);
 			List<SearchRepository> searchRes = null;
 			try {
-				searchRes = service.searchRepositories(searchQuery);
+				searchRes = service.searchRepositories(searchQuery).stream().sorted(Comparator.comparing(SearchRepository::getCreatedAt).reversed()).collect(Collectors.toList());
 				searchResDetails.setRepos(searchRes.subList(0, searchRes.size()<10 ? searchRes.size() : 10));
 
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
-			System.out.println("Search result "+searchRes.toString());
 			return searchResDetails;
 
 		});
+
+	}
+
+	public List<String> getTopics(String user, String repo){
+
+		GitHubRequest request = new GitHubRequest();
+		List<String> topic_list = new ArrayList<>();
+
+
+		try {
+			Repository repository = repositoryService.getRepository(user,repo);
+			String url =  repository.getUrl().split("//")[1].split("api.github.com")[1];
+			request.setUri(url + "/topics");
+			String result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request)))
+					.lines().collect(Collectors.joining("\n"));
+			JSONObject jsonObject = new JSONObject(result);
+			String topics = jsonObject.get("names").toString();
+			topic_list = Arrays.asList(topics.replace("[", "").replace("]", "").split(","));
+			System.out.println(topic_list);
+
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return topic_list;
 
 	}
 

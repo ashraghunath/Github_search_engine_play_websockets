@@ -78,7 +78,7 @@ public class GithubController {
 	 * @author Trusha Patel
 	 * @param topic_name of the repository
 	 * @return CompletionStage<Result> represents the async response containing the process stage of Result object
-	 */
+	s */
 
 	public CompletionStage<Result> getReposByTopics(String topic_name) {
 		CompletionStage<Result> resultCompletionStage = githubService.getRepositoriesByTopics(topic_name)

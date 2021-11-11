@@ -30,7 +30,7 @@
                 <tr><td><a href="/getUserDetails/@userRepositoryTopics.getOwner()">@userRepositoryTopics.getOwner()</a></td><td><a href="/getRepositoryDetails/@userRepositoryTopics.getOwner()/@userRepositoryTopics.getName()">@userRepositoryTopics.getName()</a></td>
                 <td>
                     @for(topic <- userRepositoryTopics.getTopics()) {
-                        @topic
+                       <a href = "/getReposByTopics/@topic">@topic</a>
                     }
                 </td>
                 </tr>
