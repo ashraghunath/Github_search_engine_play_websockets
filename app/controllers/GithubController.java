@@ -7,8 +7,13 @@ import play.mvc.Result;
 import services.GithubService;
 
 import javax.inject.Inject;
+import Helper.SessionHelper;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
 import static play.libs.Json.toJson;
@@ -18,23 +23,28 @@ public class GithubController {
 
 	private final FormFactory formFactory;
 	private final GithubService githubService;
+	private final SessionHelper sessionHelper;
 
 	@Inject
-	public GithubController(FormFactory formFactory, GithubService githubService) {
+	public GithubController(FormFactory formFactory, GithubService githubService, SessionHelper sessionHelper) {
 		this.formFactory = formFactory;
 		this.githubService = githubService;
+		this.sessionHelper = sessionHelper;
 	}
 
-	public Result index() {
-		return ok(views.html.index.render(null));
+	public Result index(Http.Request request) {
+		
+		if(sessionHelper.checkSessionExist(request))
+		return ok(views.html.index.render(sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
+		else
+	    return ok(views.html.index.render(null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
 	}
 
 	public CompletionStage<Result> search(Http.Request request) {
 		DynamicForm form = formFactory.form().bindFromRequest(request);
 		String phrase = form.get("phrase");
 		CompletionStage<Result> resultCompletionStage = githubService
-					.searchResults(phrase)
-					.thenApply(map -> ok(views.html.index.render(map)));
+				.searchResults(request, phrase).thenApply(map -> ok(views.html.index.render(map)));
 		return resultCompletionStage;
 	}
 
@@ -52,6 +62,7 @@ public class GithubController {
 				.thenApply(repository -> ok(views.html.repository.render(repository)));
 		return resultCompletionStage;
 	}
+
 	/**
 	 * Returns the Repository Issues for the provided username and repository name
 	 * 
@@ -73,7 +84,6 @@ public class GithubController {
 				.thenApply(user -> ok(views.html.user.render(user)));
 		return result;
 	}
-
 	/** Returns the Repositories that contains the given topic
 	 * @author Trusha Patel
 	 * @param topic_name of the repository
