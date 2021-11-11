@@ -7,6 +7,8 @@ import play.mvc.Result;
 import services.GithubService;
 
 import javax.inject.Inject;
+import Helper.SessionHelper;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -21,24 +23,28 @@ public class GithubController {
 
 	private final FormFactory formFactory;
 	private final GithubService githubService;
+	private final SessionHelper sessionHelper;
 
 	@Inject
-	public GithubController(FormFactory formFactory, GithubService githubService) {
+	public GithubController(FormFactory formFactory, GithubService githubService, SessionHelper sessionHelper) {
 		this.formFactory = formFactory;
 		this.githubService = githubService;
+		this.sessionHelper = sessionHelper;
 	}
 
 	public Result index(Http.Request request) {
-		UUID uuid = UUID.randomUUID();
-		String sessionKey = uuid.toString();
-		return ok(views.html.index.render(null)).addingToSession(request, "key", sessionKey);
+		
+		if(sessionHelper.checkSessionExist(request))
+		return ok(views.html.index.render(sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
+		else
+	    return ok(views.html.index.render(null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
 	}
 
 	public CompletionStage<Result> search(Http.Request request) {
 		DynamicForm form = formFactory.form().bindFromRequest(request);
 		String phrase = form.get("phrase");
 		CompletionStage<Result> resultCompletionStage = githubService
-				.searchResults(request.session().get("key"), phrase).thenApply(map -> ok(views.html.index.render(map)));
+				.searchResults(request, phrase).thenApply(map -> ok(views.html.index.render(map)));
 		return resultCompletionStage;
 	}
 

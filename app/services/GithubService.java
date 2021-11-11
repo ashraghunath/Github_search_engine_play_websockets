@@ -1,6 +1,8 @@
 package services;
 
 import models.*;
+import play.mvc.Http;
+
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 
@@ -12,7 +14,7 @@ import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
-
+import Helper.SessionHelper;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +31,7 @@ public class GithubService {
 	private GitHubClient gitHubClient;
 	private UserService userService;
 	private List<SearchRepository> searchRepositoryList;
+	private SessionHelper sessionHelper;
 	Map<Optional<String>, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
 
 	public GithubService() {
@@ -37,6 +40,7 @@ public class GithubService {
 		this.collaboratorService = new CollaboratorService(gitHubClient);
 		this.issueService = new IssueService(gitHubClient);
 		this.userService = new UserService(gitHubClient);
+		this.sessionHelper = new SessionHelper();
 	}
 
 	/**
@@ -111,10 +115,8 @@ public class GithubService {
 
 		return supplyAsync(() -> {
 
-
-			 String[] listCommonWords = {"the", "a", "an", "are", "and","not", "be","for","on", "to","of"};
-			 Set<String> commonWords = new HashSet<>(Arrays.asList(listCommonWords));  
-
+			String[] listCommonWords = { "the", "a", "an", "are", "and", "not", "be", "for", "on", "to", "of" };
+			Set<String> commonWords = new HashSet<>(Arrays.asList(listCommonWords));
 
 			// Converting Issue list into list of strings
 			List<String> newList = new ArrayList<>(issues.size());
@@ -122,14 +124,12 @@ public class GithubService {
 				newList.add(String.valueOf(issue.getTitle()));
 			}
 
-
-		// Splitting words
-		List<String> list = (newList).stream().map(w -> w.trim().split("\\s+")).flatMap(Arrays::stream).filter(q -> !commonWords.contains(q))
-				.collect(Collectors.toList());
-		// Mapping words with their frequency
-		Map<String, Integer> wordsCountMap = list.stream().map(eachWord -> eachWord)
-				.collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
-
+			// Splitting words
+			List<String> list = (newList).stream().map(w -> w.trim().split("\\s+")).flatMap(Arrays::stream)
+					.filter(q -> !commonWords.contains(q)).collect(Collectors.toList());
+			// Mapping words with their frequency
+			Map<String, Integer> wordsCountMap = list.stream().map(eachWord -> eachWord)
+					.collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
 
 			// Sorting the result in descending order
 			wordsCountMap = wordsCountMap.entrySet().stream()
@@ -161,9 +161,7 @@ public class GithubService {
 		});
 	}
 
-
-	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResults(Optional<String> session,
-			String phrase) {
+	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResults(Http.Request request, String phrase) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				searchRepositoryList = repositoryService.searchRepositories(phrase, 0).stream()
@@ -181,13 +179,9 @@ public class GithubService {
 				userRepositoryTopics.setTopics(Arrays.asList("java", "android", "framework"));
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
-			Map<String, List<UserRepositoryTopics>> phraseList = searchSessionMap.get(session) != null
-					? searchSessionMap.get(session)
-					: new LinkedHashMap<>();
-			phraseList.put(phrase, userRepositoryTopicsList);
-			searchSessionMap.put(session, phraseList);
-			Map<String, List<UserRepositoryTopics>> searchMap = new LinkedHashMap<>();
-			searchMap.putAll(searchSessionMap.get(session));
+			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper
+					.getSearchResultsForCurrentSession(request, phrase, userRepositoryTopicsList);
+
 			return searchMap;
 		});
 	}
@@ -223,6 +217,5 @@ public class GithubService {
 		});
 
 	}
-
 
 }
