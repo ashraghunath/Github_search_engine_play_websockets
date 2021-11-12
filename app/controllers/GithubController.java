@@ -8,15 +8,11 @@ import services.GithubService;
 
 import javax.inject.Inject;
 import Helper.SessionHelper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 
-import static play.libs.Json.toJson;
+import java.util.concurrent.CompletionStage;
+import play.cache.*;
+import views.html.repository;
+
 import static play.mvc.Results.ok;
 
 public class GithubController {
@@ -24,12 +20,14 @@ public class GithubController {
 	private final FormFactory formFactory;
 	private final GithubService githubService;
 	private final SessionHelper sessionHelper;
+	private AsyncCacheApi cache;
 
 	@Inject
-	public GithubController(FormFactory formFactory, GithubService githubService, SessionHelper sessionHelper) {
+	public GithubController(FormFactory formFactory, GithubService githubService, SessionHelper sessionHelper, AsyncCacheApi cache) {
 		this.formFactory = formFactory;
 		this.githubService = githubService;
 		this.sessionHelper = sessionHelper;
+		this.cache=cache;
 	}
 
 	public Result index(Http.Request request) {
@@ -58,9 +56,12 @@ public class GithubController {
 	 *         process stage of Result object
 	 */
 	public CompletionStage<Result> getRepositoryDetails(String userName, String repositoryName) {
-		CompletionStage<Result> resultCompletionStage = githubService.getRepositoryDetails(userName, repositoryName)
-				.thenApply(repository -> ok(views.html.repository.render(repository)));
-		return resultCompletionStage;
+
+		CompletionStage<Result> results = cache
+				.getOrElseUpdate((userName +"."+repositoryName),
+						() -> githubService.getRepositoryDetails(userName, repositoryName)
+				.thenApplyAsync(repository -> ok(views.html.repository.render(repository))));
+		return results;
 	}
 
 	/**
