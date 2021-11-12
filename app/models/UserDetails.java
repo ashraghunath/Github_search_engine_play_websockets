@@ -6,6 +6,11 @@ import org.eclipse.egit.github.core.User;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the object to be displayed on the page - User profile
+ * @author Sourav Uttam Sinha 40175660
+ */
+
 public class UserDetails {
     private User user;
     private List<Repository> repository;

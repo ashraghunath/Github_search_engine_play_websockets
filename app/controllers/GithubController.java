@@ -80,11 +80,6 @@ public class GithubController {
 		return resultCompletionStage;
 	}
 
-	public CompletionStage<Result> getUserDetails(String userName){
-		CompletionStage<Result> result = githubService.getUserDetails(userName)
-				.thenApply(user -> ok(views.html.user.render(user)));
-		return result;
-	}
 	/** Returns the Repositories that contains the given topic
 	 * @author Trusha Patel
 	 * @param topic_name of the repository
@@ -96,6 +91,21 @@ public class GithubController {
 				.thenApply(repositories -> ok(views.html.topics.render(repositories)));
 
 		return resultCompletionStage;
+	}
+
+	/** Returns the User Details for the provided user
+	 * @author Sourav Uttam Sinha
+	 * @param userName the user who owns the repository.
+	 * @return CompletionStage<Result> represents the async response containing the process stage of Result object
+	 */
+
+	public CompletionStage<Result> getUserDetails(String userName) {
+
+		CompletionStage<Result> results = cache
+				.getOrElseUpdate((userName + ".getUserDetails"),
+						() -> githubService.getUserDetails(userName)
+								.thenApplyAsync(user -> ok(views.html.user.render(user))));
+		return results;
 	}
 
 }

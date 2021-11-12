@@ -2,8 +2,10 @@ package controllers;
 
 import models.IssueWordStatistics;
 import models.RepositoryDetails;
+import models.UserDetails;
 import org.apache.http.HttpStatus;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.User;
 import org.junit.Test;
 import static play.mvc.Results.ok;
 import org.junit.runner.RunWith;
@@ -24,6 +26,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import play.cache.*;
+import views.html.repository;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -136,6 +140,34 @@ public class GithubControllerTest extends WithApplication {
         	mapItem.put("out",1);        
         	IssueWordStatistics issueWordStatistics = new IssueWordStatistics(mapItem);
             return issueWordStatistics;
+        });
+    }
+
+    /** Unit test for resting the endpoint /getUserDetails/:userName
+     * @author Sourav Uttam Sinha 40175660
+     */
+    @Test
+    public void getUserDetailsTest()
+    {
+        running(provideApplication(), () -> {
+            when(cache.getOrElseUpdate(any(),any())).thenReturn(userDetailsObject());
+            CompletionStage<Result> userDetails = githubController.getUserDetails("userName");
+            assertTrue(userDetails.toCompletableFuture().isDone());
+        });
+    }
+
+
+    /** mock object for testing getRepositoryDetailsTest
+     * @author Sourav Uttam Sinha 40175660
+     * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
+     */
+    private CompletionStage<Object> userDetailsObject(){
+        return CompletableFuture.supplyAsync( () -> {
+            UserDetails userDetails = new UserDetails();
+            User user = new User();
+            user.setName("MockUserName");
+            userDetails.setUser(user);
+            return userDetails;
         });
     }
 

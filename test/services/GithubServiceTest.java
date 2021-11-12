@@ -3,10 +3,13 @@ package services;
 import models.IssueWordStatistics;
 import models.RepositoryDetails;
 
+import models.UserDetails;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import play.Application;
 import play.inject.guice.GuiceApplicationBuilder;
 import play.test.WithApplication;
+import views.html.repository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +47,8 @@ public class GithubServiceTest extends WithApplication {
     RepositoryService repositoryService;
     @Mock
     IssueService issueService;
+    @Mock
+    UserService userService;
 
     @InjectMocks
     GithubService githubServiceMock;
@@ -120,5 +126,33 @@ public class GithubServiceTest extends WithApplication {
     	issues.add(issue3);
     	issues.add(issue4);
     	return issues;
+    }
+
+    /**
+     * tests the service getAllIssues
+     * @author Sourav Uttam Sinha 40175660
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    @Test
+    public void getUserDetailsTest() throws IOException, ExecutionException, InterruptedException {
+        when(userService.getUser(any(String.class))).thenReturn(user());
+        CompletionStage<UserDetails> userDetails = githubServiceMock.getUserDetails("userName");
+        assertNotNull(userDetails);
+        UserDetails userDetails1 = userDetails.toCompletableFuture().get();
+        assertEquals(userDetails1.getUser().getName(),"MockUserName");
+    }
+
+    /**
+     * mock object for testing getRepositoryDetails
+     * @author Sourav Uttam Sinha 40175660
+     * @return User object contains mock values
+     */
+    private User user()
+    {
+        User user = new User();
+        user.setName("MockUserName");
+        return user;
     }
 }
