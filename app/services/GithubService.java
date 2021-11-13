@@ -197,32 +197,26 @@ public class GithubService {
 	 *         object
 	 */
 
-	public CompletionStage<SearchedRepositoryDetails> getRepositoriesByTopics(String topic_name) {
-
+	public CompletionStage<SearchedRepositoryDetails> getRepositoriesByTopics(String topic_name){
 		return CompletableFuture.supplyAsync(() -> {
 			Map<String, String> searchQuery = new HashMap<String, String>();
-			RepositoryService service = new RepositoryService(gitHubClient);
-
 			SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
 			searchQuery.put("topic", topic_name);
 			List<SearchRepository> searchRes = null;
 			try {
-				searchRes = service.searchRepositories(searchQuery).stream()
+				searchRes = repositoryService.searchRepositories(searchQuery).stream()
 						.sorted(Comparator.comparing(SearchRepository::getCreatedAt).reversed()).limit(10)
-						.collect(Collectors.toList());;
+						.collect(Collectors.toList());
 				searchResDetails.setRepos(searchRes);
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 			System.out.println("Search result " + searchRes.toString());
 			return searchResDetails;
 
 		});
 
 	}
-
 	/**
 	 * @author Trusha Patel 40192614
 	 * @param user   Owner name of the Repository
