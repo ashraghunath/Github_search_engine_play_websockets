@@ -1,6 +1,7 @@
 package services;
 
 import models.*;
+import org.eclipse.egit.github.core.client.GitHubRequest;
 import play.mvc.Http;
 
 import org.eclipse.egit.github.core.Issue;
@@ -16,11 +17,14 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import Helper.SessionHelper;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import java.util.stream.Collectors;
+import org.json.*;
 import java.util.stream.Stream;
 
 public class GithubService {
@@ -41,6 +45,7 @@ public class GithubService {
 		this.issueService = new IssueService(gitHubClient);
 		this.userService = new UserService(gitHubClient);
 		this.sessionHelper = new SessionHelper();
+		gitHubClient.setCredentials("trushap2198","Hold$123");
 	}
 
 	/**
@@ -106,7 +111,7 @@ public class GithubService {
 	 * and repository name
 	 * 
 	 * @author Anushka Shetty 40192371
-	 * @param List<Issue> List of all the issues for the given username and
+	 * @param issues<Issue> List of all the issues for the given username and
 	 *                    repository name
 	 * @return CompletableFuture<IssueWordStatistics> represents the async response
 	 *         containing the process stage of IssueWordStatistics object
@@ -174,9 +179,7 @@ public class GithubService {
 			for (SearchRepository searchRepository : searchRepositoryList) {
 				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
 						searchRepository.getName());
-				// Todo get topics from service
-
-				userRepositoryTopics.setTopics(Arrays.asList("java", "android", "framework"));
+				userRepositoryTopics.setTopics(getTopics(searchRepository.getOwner(),searchRepository.getName()));
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
 			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper
@@ -204,8 +207,10 @@ public class GithubService {
 			searchQuery.put("topic", topic_name);
 			List<SearchRepository> searchRes = null;
 			try {
-				searchRes = service.searchRepositories(searchQuery);
-				searchResDetails.setRepos(searchRes.subList(0, searchRes.size() < 10 ? searchRes.size() : 10));
+				searchRes = service.searchRepositories(searchQuery).stream()
+						.sorted(Comparator.comparing(SearchRepository::getCreatedAt).reversed()).limit(10)
+						.collect(Collectors.toList());;
+				searchResDetails.setRepos(searchRes);
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -218,4 +223,26 @@ public class GithubService {
 
 	}
 
+	/**
+	 * @author Trusha Patel 40192614
+	 * @param user   Owner name of the Repository
+	 * @param repo    Name of the Repository
+	 * @return List of the topics of the queried Repository
+	 */
+	public List<String> getTopics(String user, String repo){
+		GitHubRequest request = new GitHubRequest();
+		List<String> topic_list = new ArrayList<>();
+		try {
+			Repository repository = repositoryService.getRepository(user,repo);
+			String url =  repository.getUrl().split("//")[1].split("api.github.com")[1];
+			request.setUri(url + "/topics");
+			String result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request)))
+					.lines().collect(Collectors.joining("\n"));
+			JSONObject jsonObject = new JSONObject(result);
+			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(",")).collect(Collectors.toList());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return topic_list;
+	}
 }
