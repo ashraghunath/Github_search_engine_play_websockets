@@ -156,40 +156,4 @@ public class GithubServiceTest extends WithApplication {
         return user;
     }
 
-    @Test
-
-    public void getRepositoriesByTopic() throws IOException, InterruptedException, ExecutionException {
-        List<SearchRepository> sr = searchRepos();
-        System.out.println("Whats is this:"+ sr);
-        when(repositoryService.searchRepositories(anyMap())).thenReturn(sr);
-        CompletionStage<SearchedRepositoryDetails> searchedReposDetails = githubServiceMock.getRepositoriesByTopics("mocktopic");
-        assertNotNull(searchedReposDetails);
-        SearchedRepositoryDetails details = searchedReposDetails.toCompletableFuture().get();
-        List<String> actual = new ArrayList<>();
-        for (SearchRepository repo:details.getRepo()) {
-            actual.add(repo.getName());
-            System.out.println("repo:"+ repo.getName());
-        }
-        List<String> expected = Arrays.asList("repo2", "repo1");
-        assertEquals(expected,actual);
-    }
-
-    private List<SearchRepository> searchRepos() {
-        List<SearchRepository> searchItem = new ArrayList<>();
-        Calendar my_cal = Calendar.getInstance();
-        SearchRepository searchMock1 = mock(SearchRepository.class);
-        my_cal.set(2010,3,22);
-        when(searchMock1.getCreatedAt()).thenReturn(my_cal.getTime());
-        when(searchMock1.getOwner()).thenReturn("user1");
-        when(searchMock1.getName()).thenReturn("repo1");
-        SearchRepository searchMock2 = mock(SearchRepository.class);
-        my_cal.set(2011,3,22);
-        when(searchMock2.getCreatedAt()).thenReturn(my_cal.getTime());
-        when(searchMock2.getOwner()).thenReturn("user2");
-        when(searchMock2.getName()).thenReturn("repo2");
-        searchItem.add(searchMock1);
-        searchItem.add(searchMock2);
-        return searchItem;
-    }
-
 }
