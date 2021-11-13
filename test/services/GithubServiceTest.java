@@ -155,10 +155,17 @@ public class GithubServiceTest extends WithApplication {
         user.setName("MockUserName");
         return user;
     }
+
+    /**
+     * test for getRepositoriesByTopicTest function
+     * @author Trusha Patel 40192614
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     @Test
     public void getRepositoriesByTopicTest() throws IOException, InterruptedException, ExecutionException {
         List<SearchRepository> sr = searchRepos();
-        System.out.println("Whats is this:"+ sr);
         when(repositoryService.searchRepositories(anyMap())).thenReturn(sr);
         CompletionStage<SearchedRepositoryDetails> searchedReposDetails = githubServiceMock.getRepositoriesByTopics("mocktopic");
         assertNotNull(searchedReposDetails);
@@ -166,12 +173,17 @@ public class GithubServiceTest extends WithApplication {
         List<String> actual = new ArrayList<>();
         for (SearchRepository repo:details.getRepo()) {
             actual.add(repo.getName());
-            System.out.println("repo:"+ repo.getName());
+            //System.out.println("repo:"+ repo.getName());
         }
         List<String> expected = Arrays.asList("repo2", "repo1");
         assertEquals(expected,actual);
     }
 
+    /**
+     * mock object for testing getRepositoryDetails
+     * @author Trusha Patel
+     *
+     */
     private List<SearchRepository> searchRepos() {
         List<SearchRepository> searchItem = new ArrayList<>();
         Calendar my_cal = Calendar.getInstance();

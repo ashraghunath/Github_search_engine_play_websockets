@@ -211,7 +211,6 @@ public class GithubService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Search result " + searchRes.toString());
 			return searchResDetails;
 
 		});
