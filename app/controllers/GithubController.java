@@ -89,7 +89,6 @@ public class GithubController {
 	public CompletionStage<Result> getReposByTopics(String topic_name) {
 		CompletionStage<Result> resultCompletionStage = githubService.getRepositoriesByTopics(topic_name)
 				.thenApply(repositories -> ok(views.html.topics.render(repositories)));
-
 		return resultCompletionStage;
 	}
 

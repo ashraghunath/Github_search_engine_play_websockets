@@ -2,9 +2,11 @@ package controllers;
 
 import models.IssueWordStatistics;
 import models.RepositoryDetails;
+import models.SearchedRepositoryDetails;
 import models.UserDetails;
 import org.apache.http.HttpStatus;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
 import org.junit.Test;
 import static play.mvc.Results.ok;
@@ -20,11 +22,12 @@ import play.test.Helpers;
 import play.test.WithApplication;
 import services.GithubService;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import play.cache.*;
 import views.html.repository;
 
@@ -171,5 +174,57 @@ public class GithubControllerTest extends WithApplication {
         });
     }
 
+    /**
+     * Unit Test for testing the endpoint /getReposByTopics/:topicName
+     * @author Trusha Patel 40192614
+     */
+
+    @Test
+    public void getReposByTopicsTest()
+    {
+        running(provideApplication(), () -> {
+            when(githubService.getRepositoriesByTopics(anyString())).thenReturn(searchedRepositories());
+            CompletionStage<Result> repositories = githubController.getReposByTopics("play");
+            try {
+                Result result = repositories.toCompletableFuture().get();
+                assertEquals(HttpStatus.SC_OK,result.status());
+                assertTrue(contentAsString(result).contains("repo1"));
+                assertEquals("text/html",result.contentType().get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
+     *
+     *  mock object for testing getReposByTopicsTest
+     * @author Trusha Patel
+     * @return CompletionStage<SearchedRepositoryDetails represents the async response containing the process stage of SearchedRepository
+     */
+    private CompletionStage<SearchedRepositoryDetails> searchedRepositories(){
+        return CompletableFuture.supplyAsync( () -> {
+            SearchedRepositoryDetails searchedRepositoryDetails = new SearchedRepositoryDetails();
+            List<SearchRepository> searchItem = new ArrayList<>();
+            Calendar my_cal = Calendar.getInstance();
+            SearchRepository searchMock1 = mock(SearchRepository.class);
+            my_cal.set(2010,3,22);
+            when(searchMock1.getCreatedAt()).thenReturn(my_cal.getTime());
+            when(searchMock1.getOwner()).thenReturn("user1");
+            when(searchMock1.getName()).thenReturn("repo1");
+            SearchRepository searchMock2 = mock(SearchRepository.class);
+            my_cal.set(2011,3,22);
+            when(searchMock2.getCreatedAt()).thenReturn(my_cal.getTime());
+            when(searchMock2.getOwner()).thenReturn("user2");
+            when(searchMock2.getName()).thenReturn("repo2");
+            searchItem.add(searchMock1);
+            searchItem.add(searchMock2);
+            searchedRepositoryDetails.setRepos(searchItem);
+            return searchedRepositoryDetails;
+        });
+    }
 
 }
+

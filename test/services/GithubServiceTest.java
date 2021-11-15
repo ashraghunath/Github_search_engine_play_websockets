@@ -1,15 +1,15 @@
 package services;
 
-import models.IssueWordStatistics;
-import models.RepositoryDetails;
+import models.*;
 
-import models.UserDetails;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
+import org.fluentlenium.core.search.Search;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,17 +23,16 @@ import play.test.WithApplication;
 import views.html.repository;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class GithubServiceTest extends WithApplication {
 
 
@@ -49,6 +48,7 @@ public class GithubServiceTest extends WithApplication {
     IssueService issueService;
     @Mock
     UserService userService;
+
 
     @InjectMocks
     GithubService githubServiceMock;
@@ -155,4 +155,51 @@ public class GithubServiceTest extends WithApplication {
         user.setName("MockUserName");
         return user;
     }
+
+    /**
+     * test for getRepositoriesByTopicTest function
+     * @author Trusha Patel 40192614
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    @Test
+    public void getRepositoriesByTopicTest() throws IOException, InterruptedException, ExecutionException {
+        List<SearchRepository> sr = searchRepos();
+        when(repositoryService.searchRepositories(anyMap())).thenReturn(sr);
+        CompletionStage<SearchedRepositoryDetails> searchedReposDetails = githubServiceMock.getRepositoriesByTopics("mocktopic");
+        assertNotNull(searchedReposDetails);
+        SearchedRepositoryDetails details = searchedReposDetails.toCompletableFuture().get();
+        List<String> actual = new ArrayList<>();
+        for (SearchRepository repo:details.getRepo()) {
+            actual.add(repo.getName());
+            //System.out.println("repo:"+ repo.getName());
+        }
+        List<String> expected = Arrays.asList("repo2", "repo1");
+        assertEquals(expected,actual);
+    }
+
+    /**
+     * mock object for testing getRepositoryDetails
+     * @author Trusha Patel
+     *
+     */
+    private List<SearchRepository> searchRepos() {
+        List<SearchRepository> searchItem = new ArrayList<>();
+        Calendar my_cal = Calendar.getInstance();
+        SearchRepository searchMock1 = mock(SearchRepository.class);
+        my_cal.set(2010,3,22);
+        when(searchMock1.getCreatedAt()).thenReturn(my_cal.getTime());
+        //when(searchMock1.getOwner()).thenReturn("user1");
+        when(searchMock1.getName()).thenReturn("repo1");
+        SearchRepository searchMock2 = mock(SearchRepository.class);
+        my_cal.set(2011,3,22);
+        when(searchMock2.getCreatedAt()).thenReturn(my_cal.getTime());
+        //when(searchMock2.getOwner()).thenReturn("user2");
+        when(searchMock2.getName()).thenReturn("repo2");
+        searchItem.add(searchMock1);
+        searchItem.add(searchMock2);
+        return searchItem.stream().sorted(Comparator.comparing(SearchRepository::getCreatedAt)).collect(Collectors.toList());
+    }
+
 }

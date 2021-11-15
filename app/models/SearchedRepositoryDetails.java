@@ -13,15 +13,13 @@ import org.eclipse.egit.github.core.SearchRepository;
 
 public class SearchedRepositoryDetails {
 	private List<SearchRepository> searched;
-	
+
 	public void setRepos(List<SearchRepository> searched) {
 		this.searched = searched;
 	}
-	
+
 	public List<SearchRepository> getRepo() {
 		return this.searched;
 	}
-	
-	
-	
+
 }
