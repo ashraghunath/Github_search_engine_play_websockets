@@ -45,7 +45,6 @@ public class GithubService {
 		this.issueService = new IssueService(gitHubClient);
 		this.userService = new UserService(gitHubClient);
 		this.sessionHelper = new SessionHelper();
-		gitHubClient.setCredentials("trushap2198","Hold$123");
 	}
 
 	/**
