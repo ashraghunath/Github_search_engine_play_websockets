@@ -87,9 +87,12 @@ public class GithubController {
 	 */
 
 	public CompletionStage<Result> getReposByTopics(String topic_name) {
-		CompletionStage<Result> resultCompletionStage = githubService.getRepositoriesByTopics(topic_name)
-				.thenApply(repositories -> ok(views.html.topics.render(repositories)));
-		return resultCompletionStage;
+		CompletionStage<Result> results = cache
+				.getOrElseUpdate((topic_name + ".getReposByTopics"),
+						() -> githubService.getReposByTopics(topic_name)
+								.thenApplyAsync(repository -> ok(views.html.topics.render(repository))));
+		return results;
+
 	}
 
 	/** Returns the User Details for the provided user

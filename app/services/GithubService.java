@@ -45,7 +45,6 @@ public class GithubService {
 		this.issueService = new IssueService(gitHubClient);
 		this.userService = new UserService(gitHubClient);
 		this.sessionHelper = new SessionHelper();
-		gitHubClient.setCredentials("trushap2198","Hold$123");
 	}
 
 	/**
@@ -99,7 +98,6 @@ public class GithubService {
 			try {
 				issues = issueService.getIssues(userName, repositoryName, parameters);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return issues;
@@ -111,7 +109,7 @@ public class GithubService {
 	 * and repository name
 	 * 
 	 * @author Anushka Shetty 40192371
-	 * @param issues<Issue> List of all the issues for the given username and
+	 * @param List<Issue> List of all the issues for the given username and
 	 *                    repository name
 	 * @return CompletableFuture<IssueWordStatistics> represents the async response
 	 *         containing the process stage of IssueWordStatistics object
@@ -179,7 +177,7 @@ public class GithubService {
 			for (SearchRepository searchRepository : searchRepositoryList) {
 				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
 						searchRepository.getName());
-				userRepositoryTopics.setTopics(getTopics(searchRepository.getOwner(),searchRepository.getName()));
+				userRepositoryTopics.setTopics(getTopics(searchRepository));
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
 			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper
@@ -191,13 +189,13 @@ public class GithubService {
 
 	/**
 	 * @author Trusha Patel
-	 * @param topic_name The query topic
+	 * @param  topic_name The query topic
 	 * @return CompletionStage<SearchedRepositoryDetails> represents the async
 	 *         response containing the process stage of SearchedRepositoryDetails
 	 *         object
 	 */
 
-	public CompletionStage<SearchedRepositoryDetails> getRepositoriesByTopics(String topic_name){
+	public CompletionStage<SearchedRepositoryDetails> getReposByTopics(String topic_name){
 		return CompletableFuture.supplyAsync(() -> {
 			Map<String, String> searchQuery = new HashMap<String, String>();
 			SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
@@ -212,29 +210,30 @@ public class GithubService {
 				e.printStackTrace();
 			}
 			return searchResDetails;
-
 		});
 
 	}
 	/**
 	 * @author Trusha Patel 40192614
-	 * @param user   Owner name of the Repository
-	 * @param repo    Name of the Repository
+	 * @param searchRepository A SearchRepository object to get the topics for
 	 * @return List of the topics of the queried Repository
 	 */
-	public List<String> getTopics(String user, String repo){
+	public List<String> getTopics(SearchRepository searchRepository){
 		GitHubRequest request = new GitHubRequest();
 		List<String> topic_list = new ArrayList<>();
 		try {
-			Repository repository = repositoryService.getRepository(user,repo);
-			String url =  repository.getUrl().split("//")[1].split("api.github.com")[1];
-			request.setUri(url + "/topics");
+
+			String url =  searchRepository.getUrl().split("//")[1].split("github.com")[1];
+			request.setUri("/repos"+ url + "/topics");
 			String result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request)))
 					.lines().collect(Collectors.joining("\n"));
 			JSONObject jsonObject = new JSONObject(result);
 			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(",")).collect(Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		if (topic_list.isEmpty()){
+			topic_list.add("No Topics");
 		}
 		return topic_list;
 	}

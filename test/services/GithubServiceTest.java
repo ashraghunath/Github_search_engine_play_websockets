@@ -6,6 +6,8 @@ import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -22,7 +24,10 @@ import play.inject.guice.GuiceApplicationBuilder;
 import play.test.WithApplication;
 import views.html.repository;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -164,10 +169,10 @@ public class GithubServiceTest extends WithApplication {
      * @throws ExecutionException
      */
     @Test
-    public void getRepositoriesByTopicTest() throws IOException, InterruptedException, ExecutionException {
-        List<SearchRepository> sr = searchRepos();
-        when(repositoryService.searchRepositories(anyMap())).thenReturn(sr);
-        CompletionStage<SearchedRepositoryDetails> searchedReposDetails = githubServiceMock.getRepositoriesByTopics("mocktopic");
+    public void getReposByTopicTest() throws IOException, InterruptedException, ExecutionException {
+        List<SearchRepository> searchRepos = searchRepos();
+        when(repositoryService.searchRepositories(anyMap())).thenReturn(searchRepos);
+        CompletionStage<SearchedRepositoryDetails> searchedReposDetails = githubServiceMock.getReposByTopics("mocktopic");
         assertNotNull(searchedReposDetails);
         SearchedRepositoryDetails details = searchedReposDetails.toCompletableFuture().get();
         List<String> actual = new ArrayList<>();
@@ -180,7 +185,7 @@ public class GithubServiceTest extends WithApplication {
     }
 
     /**
-     * mock object for testing getRepositoryDetails
+     * mock object for testing getRepositoriesByTopics
      * @author Trusha Patel
      *
      */
@@ -201,5 +206,4 @@ public class GithubServiceTest extends WithApplication {
         searchItem.add(searchMock2);
         return searchItem.stream().sorted(Comparator.comparing(SearchRepository::getCreatedAt)).collect(Collectors.toList());
     }
-
 }
