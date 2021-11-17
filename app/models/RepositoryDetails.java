@@ -13,11 +13,9 @@ import java.util.List;
  */
 public class RepositoryDetails {
     private Repository repository;
-    private List<User> collaborators;
     private List<Issue> issues;
 
     public RepositoryDetails() {
-        this.collaborators=new ArrayList<>();
         this.issues=new ArrayList<>();
     }
 
@@ -29,16 +27,9 @@ public class RepositoryDetails {
         this.repository = repository;
     }
 
-    public List<User> getCollaborators() {
-        return collaborators;
-    }
-
-    public void setCollaborators(List<User> collaborators) {
-        this.collaborators = collaborators;
-    }
 
     public List<Issue> getIssues() {
-        return issues;
+        return this.issues;
     }
 
     public void setIssues(List<Issue> issues) {

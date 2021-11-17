@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import play.Application;
 import play.inject.guice.GuiceApplicationBuilder;
+import play.mvc.Http;
 import play.test.WithApplication;
 import views.html.repository;
 
@@ -94,7 +95,6 @@ public class GithubServiceTest extends WithApplication {
         repository.setName("MockRepoName");
         return repository;
     }
-
     
     /**
      * tests the service getAllIssues
@@ -236,4 +236,50 @@ public class GithubServiceTest extends WithApplication {
         System.out.println(stream);
         return stream;
     }
+
+    /**
+     * Test case for searchResults method
+     * @author Ashwin Raghunath 40192120
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @Test
+    public void searchtest() throws IOException, ExecutionException, InterruptedException {
+        List<SearchRepository> searchRepositoryList = searchRepositoryList();
+        when(repositoryService.searchRepositories(anyString(),anyInt())).thenReturn(searchRepositoryList);
+        when(mockClient.getStream(any())).thenReturn(topicInputStream());
+        Http.RequestBuilder requestBuilder = new Http.RequestBuilder();
+        CompletionStage<Map<String, List<UserRepositoryTopics>>> results = githubServiceMock.searchResults(requestBuilder.build(), "phrase");
+        assertNotNull(results);
+        Map<String, List<UserRepositoryTopics>> stringListMap = results.toCompletableFuture().get();
+        assertEquals(1,stringListMap.size());
+
+    }
+
+    /**
+     * Mock object for testing search
+     * @author Ashwin Raghunath 40192120
+     * @return List<SearchRepository>
+     */
+    public List<SearchRepository> searchRepositoryList()
+    {
+        SearchRepository searchRepositoryMock1 = mock(SearchRepository.class);
+        when(searchRepositoryMock1.getName()).thenReturn("name1");
+
+        when(searchRepositoryMock1.getOwner()).thenReturn("owner1");
+
+        when(searchRepositoryMock1.getUrl()).thenReturn("https://github.com/mockuser/mockrepo");
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2012,11,12);
+
+        when(searchRepositoryMock1.getCreatedAt()).thenReturn(calendar.getTime());
+
+        List<SearchRepository> list = new ArrayList<>();
+        list.add(searchRepositoryMock1);
+        return list;
+    }
+
+
 }
