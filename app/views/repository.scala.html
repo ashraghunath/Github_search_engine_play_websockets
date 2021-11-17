@@ -28,6 +28,15 @@
     <dt class="col-sm-3"><h4>Issues</h4></dt>
     <dd class="col-sm-9"><h4>@repositoryDetails.getIssues().size()</h4></dd>
 
+
+    @if(repositoryDetails.getIssues().size()>0) {
+    <dt class="col-sm-3"><h4>Issues statistics page</h4></dt>
+    <dd class="col-sm-9"><h4><a href="/getRepositoryIssues/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()">Issues statistics page</a></h4></dd>
+    }
+
+    <dt class="col-sm-3"><h4>Commit page</h4></dt>
+    <dd class="col-sm-9"><h4><a href="/getCommits/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()">Commit page</a></h4></dd>
+
     </dd>
 </dl>
     <table class="table">
