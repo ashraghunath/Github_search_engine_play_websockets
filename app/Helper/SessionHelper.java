@@ -60,7 +60,8 @@ public class SessionHelper {
 			phraseList.put(searchTerm, searchResults);
 			searchSessionMap.put(sessionValue, phraseList);
 		}
-		searchMap.putAll(searchSessionMap.get(sessionValue));
+		if(searchSessionMap.containsKey(sessionValue))
+			searchMap.putAll(searchSessionMap.get(sessionValue));
 		return searchMap;
 	}
 }
