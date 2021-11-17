@@ -69,6 +69,13 @@ public class GithubControllerTest extends WithApplication {
         running(provideApplication(), () -> {
             when(cache.getOrElseUpdate(any(),any())).thenReturn(repositoryDetailsObject());
             CompletionStage<Result> repositoryDetails = githubController.getRepositoryDetails("play", "play");
+            try {
+                repositoryDetails.toCompletableFuture().get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
             assertTrue(repositoryDetails.toCompletableFuture().isDone());
         });
     }
