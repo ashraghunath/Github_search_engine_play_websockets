@@ -9,6 +9,8 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 import static play.mvc.Results.ok;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,14 +25,10 @@ import play.test.WithApplication;
 import services.GithubService;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 import play.cache.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static play.mvc.Http.Status.OK;
@@ -62,7 +60,6 @@ public class GithubControllerTest extends WithApplication {
         Result result = route(app, request);
         assertEquals(OK, result.status());
     }
-
     /** Unit test for resting the endpoint /getRepositoryDetails/:userName/:repositoryName
      * @author Ashwin Raghunath 40192120
      */
@@ -90,8 +87,6 @@ public class GithubControllerTest extends WithApplication {
         });
     }
 
-    
-    
     /** Unit test for resting the endpoint /getRepositoryIssues/:userName/:repositoryName   
      * @author Anushka Shetty 40192371
      */
@@ -173,8 +168,8 @@ public class GithubControllerTest extends WithApplication {
     {
         running(provideApplication(), () -> {
             when(cache.getOrElseUpdate(any(),any())).thenReturn(searchedRepositoriesObject());
-            CompletionStage<Result> userDetails = githubController.getReposByTopics("mocktopic");
-            assertTrue(userDetails.toCompletableFuture().isDone());
+            CompletionStage<Result> repositories = githubController.getReposByTopics("mocktopic");
+            assertTrue(repositories.toCompletableFuture().isDone());
         });
 
     }

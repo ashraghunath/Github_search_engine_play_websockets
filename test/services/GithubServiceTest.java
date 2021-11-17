@@ -54,6 +54,9 @@ public class GithubServiceTest extends WithApplication {
     @Mock
     UserService userService;
 
+    @Mock
+    GitHubClient mockClient;
+
 
     @InjectMocks
     GithubService githubServiceMock;
@@ -205,5 +208,32 @@ public class GithubServiceTest extends WithApplication {
         searchItem.add(searchMock1);
         searchItem.add(searchMock2);
         return searchItem.stream().sorted(Comparator.comparing(SearchRepository::getCreatedAt)).collect(Collectors.toList());
+    }
+
+    @Test
+    public void getTopicsTest() throws IOException{
+        SearchRepository mocksearchRepository = mock(SearchRepository.class);
+        GitHubRequest mockRequest = mock(GitHubRequest.class);
+        when(mocksearchRepository.getUrl()).thenReturn("https://github.com/mockuser/mockrepo");
+        when(mocksearchRepository.getName()).thenReturn("mockrepo");
+        when(mocksearchRepository.getOwner()).thenReturn("mockuser");
+        //The format of the return form is: https://github.com/CyC2018/CS-Notes
+        when(mockClient.getStream(any())).thenReturn(topicInputStream());
+        List<String> topics = githubServiceMock.getTopics(mocksearchRepository);
+        List<String> expected = Arrays.asList("\"topic1\"", "\"topic2\"", "\"topic3\"");
+        assertEquals(topics,expected);
+    }
+
+    private InputStream topicInputStream() {
+        String mockTopics = "{" +
+                "\"names\": [" +
+                "\"topic1\"," +
+                "\"topic2\"," +
+                "\"topic3\"" +
+                "]" +
+                "}";
+        InputStream stream = new ByteArrayInputStream(mockTopics.getBytes(StandardCharsets.UTF_8));
+        System.out.println(stream);
+        return stream;
     }
 }
