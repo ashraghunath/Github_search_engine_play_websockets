@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.egit.github.core.SearchRepository;
@@ -13,6 +14,12 @@ import org.eclipse.egit.github.core.SearchRepository;
 
 public class SearchedRepositoryDetails {
 	private List<SearchRepository> searched;
+	private String topic;
+
+	public SearchedRepositoryDetails(){
+		searched = new ArrayList<>();
+		this.topic = topic;
+	}
 
 	public void setRepos(List<SearchRepository> searched) {
 		this.searched = searched;
@@ -22,4 +29,11 @@ public class SearchedRepositoryDetails {
 		return this.searched;
 	}
 
+	public String getTopic() {
+		return topic;
+	}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
 }

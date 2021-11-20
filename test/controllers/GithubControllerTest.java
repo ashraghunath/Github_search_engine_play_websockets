@@ -208,6 +208,7 @@ public class GithubControllerTest extends WithApplication {
             searchItem.add(searchMock1);
             searchItem.add(searchMock2);
             searchedRepositoryDetails.setRepos(searchItem);
+            searchedRepositoryDetails.setTopic("mocktopic");
             return searchedRepositoryDetails;
         });
     }

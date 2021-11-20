@@ -215,6 +215,7 @@ public class GithubService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			searchResDetails.setTopic(topic_name);
 			return searchResDetails;
 		});
 
