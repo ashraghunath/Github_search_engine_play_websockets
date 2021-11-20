@@ -7,21 +7,21 @@
         </div>
 </div>
 <div class="container">
-    <div id="form-center">
+    <div>
     <form action="@routes.GithubController.search()" method="post">
-      <input type="text" class="input-lg" name="phrase">
-      <button class="btn btn-info"><span class="glyphicon glyphicon-search"></span>Search</button>
+      <input type="text" class="input-lg" name="phrase" size="105">
+      <button class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>  Search</button>
     </form>
     </div>
 
     @if(searchMap != null && searchMap.size > 0) {
         @for((phrase, userRepositoryTopicsList) <- searchMap) {
-        <dl class="row">
+        <dl class="row" style="margin-top: 50px;">
             <dt class="col-sm-3"><h4>Search term : </h4></dt>
             <dd class="col-sm-9"><h4>@phrase</h4></dd>
         </dl>
 
-        <table class="table">
+        <table border="1" class="table">
             <thead class="thead-light">
                 <tr><th>User</th><th>Repository</th><th>Topics</th>
             </thead>
