@@ -179,6 +179,12 @@ public class GithubService {
 		});
 	}
 
+	/** List of the search results of the phrase entered by the user
+	 * @author Ashwin Raghunath 40192120
+	 * @param request incoming request value from search
+	 * @param phrase
+	 * @return map of the results after searching for repositories
+	 */
 	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResults(Http.Request request, String phrase) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
