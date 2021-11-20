@@ -71,7 +71,7 @@ public class GithubService {
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
 				repository = repositoryService.getRepository(userName, repositoryName);
-				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().sorted(Comparator.comparing(Issue::getCreatedAt).reversed()).limit(20)
+				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
 						.collect(Collectors.toList());
 				repositoryDetails.setRepository(repository);
 				repositoryDetails.setIssues(issues);
@@ -209,7 +209,7 @@ public class GithubService {
 			List<SearchRepository> searchRes = null;
 			try {
 				searchRes = repositoryService.searchRepositories(searchQuery).stream()
-						.sorted(Comparator.comparing(SearchRepository::getCreatedAt).reversed()).limit(10)
+						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
 						.collect(Collectors.toList());
 				searchResDetails.setRepos(searchRes);
 			} catch (IOException e) {
@@ -237,9 +237,6 @@ public class GithubService {
 			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(",")).collect(Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		if (topic_list.isEmpty()){
-			topic_list.add("No Topics");
 		}
 		return topic_list;
 	}

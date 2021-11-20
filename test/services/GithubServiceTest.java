@@ -200,18 +200,24 @@ public class GithubServiceTest extends WithApplication {
         Calendar my_cal = Calendar.getInstance();
         SearchRepository searchMock1 = mock(SearchRepository.class);
         my_cal.set(2010,3,22);
-        when(searchMock1.getCreatedAt()).thenReturn(my_cal.getTime());
+        when(searchMock1.getPushedAt()).thenReturn(my_cal.getTime());
         //when(searchMock1.getOwner()).thenReturn("user1");
         when(searchMock1.getName()).thenReturn("repo1");
         SearchRepository searchMock2 = mock(SearchRepository.class);
         my_cal.set(2011,3,22);
-        when(searchMock2.getCreatedAt()).thenReturn(my_cal.getTime());
+        when(searchMock2.getPushedAt()).thenReturn(my_cal.getTime());
         //when(searchMock2.getOwner()).thenReturn("user2");
         when(searchMock2.getName()).thenReturn("repo2");
         searchItem.add(searchMock1);
         searchItem.add(searchMock2);
-        return searchItem.stream().sorted(Comparator.comparing(SearchRepository::getCreatedAt)).collect(Collectors.toList());
+        return searchItem.stream().sorted(Comparator.comparing(SearchRepository::getPushedAt)).collect(Collectors.toList());
     }
+
+    /**
+     * Testing for the topics fetch in the main search page
+     * @author Trusha Patel 40192614
+     * @throws IOException
+     */
 
     @Test
     public void getTopicsTest() throws IOException{
@@ -226,6 +232,11 @@ public class GithubServiceTest extends WithApplication {
         List<String> expected = Arrays.asList("\"topic1\"", "\"topic2\"", "\"topic3\"");
         assertEquals(topics,expected);
     }
+
+    /**
+     * Mocks the topics for the fake API call
+     * @return
+     */
 
     private InputStream topicInputStream() {
         String mockTopics = "{" +
