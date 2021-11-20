@@ -94,7 +94,7 @@ public class GithubController {
 	}
 
 	/** Returns the User Details for the provided user
-	 * @author Sourav Uttam Sinha
+	 * @author Sourav Uttam Sinha 40175660
 	 * @param userName the user who owns the repository.
 	 * @return CompletionStage<Result> represents the async response containing the process stage of Result object
 	 */

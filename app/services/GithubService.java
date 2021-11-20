@@ -148,6 +148,15 @@ public class GithubService {
 		});
 	}
 
+	/**
+	 * Returns the User details for the provided username
+	 *
+	 * @author Sourav Uttam Sinha 40175660
+	 * @param userName       the user who owns the repository.
+	 * @return CompletionStage<RepositoryDetails> represents the async response
+	 *         containing the process stage of RepositoryDetails object
+	 */
+
 	public CompletionStage<UserDetails> getUserDetails(String userName) {
 		return CompletableFuture.supplyAsync(() -> {
 			UserDetails userDetails = new UserDetails();
