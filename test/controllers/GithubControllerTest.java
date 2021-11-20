@@ -174,9 +174,17 @@ public class GithubControllerTest extends WithApplication {
     public void getReposByTopicsTest()
     {
         running(provideApplication(), () -> {
-            when(cache.getOrElseUpdate(any(),any())).thenReturn(searchedRepositoriesObject());
+            when(githubService.getReposByTopics(anyString())).thenReturn(searchedRepositoriesObject());
             CompletionStage<Result> repositories = githubController.getReposByTopics("mocktopic");
-            assertTrue(repositories.toCompletableFuture().isDone());
+            try {
+                Result result = repositories.toCompletableFuture().get();
+                assertEquals(HttpStatus.SC_OK,result.status());
+                assertEquals("text/html",result.contentType().get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         });
 
     }
@@ -187,7 +195,7 @@ public class GithubControllerTest extends WithApplication {
      * @author Trusha Patel
      * @return CompletionStage<Object> represents the async response containing the process stage of SearchedRepository
      */
-    private CompletionStage<Object> searchedRepositoriesObject(){
+    private CompletionStage<SearchedRepositoryDetails> searchedRepositoriesObject(){
         return CompletableFuture.supplyAsync(() -> {
             SearchedRepositoryDetails searchedRepositoryDetails = new SearchedRepositoryDetails();
             List<SearchRepository> searchItem = new ArrayList<>();
