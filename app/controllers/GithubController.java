@@ -29,7 +29,15 @@ public class GithubController {
 		this.sessionHelper = sessionHelper;
 		this.cache=cache;
 	}
-
+	
+	/**
+	 * Returns Result View for the Search page along with the session
+	 * 
+	 * @author Anushka Shetty 40192371
+	 * @param HTTP request object
+	 * @return Result View for the search page
+	 */
+	
 	public Result index(Http.Request request) {
 		
 		if(sessionHelper.checkSessionExist(request))

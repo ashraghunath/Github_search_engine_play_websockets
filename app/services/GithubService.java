@@ -44,7 +44,7 @@ public class GithubService {
 
 	@Inject
 	public GithubService(Config config) {
-		this.config=config;
+		this.config = config;
 		gitHubClient = new GitHubClient();
 		gitHubClient.setOAuth2Token(config.getString("access.token"));
 		this.repositoryService = new RepositoryService(gitHubClient);
@@ -71,7 +71,8 @@ public class GithubService {
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
 				repository = repositoryService.getRepository(userName, repositoryName);
-				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
+				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream()
+						.sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
 						.collect(Collectors.toList());
 				repositoryDetails.setRepository(repository);
 				repositoryDetails.setIssues(issues);
@@ -115,8 +116,8 @@ public class GithubService {
 	 * and repository name
 	 * 
 	 * @author Anushka Shetty 40192371
-	 * @param List<Issue> List of all the issues for the given username and
-	 *                    repository name
+	 * @param Issue List of all the issues for the given username and repository
+	 *              name
 	 * @return CompletableFuture<IssueWordStatistics> represents the async response
 	 *         containing the process stage of IssueWordStatistics object
 	 */
@@ -124,7 +125,8 @@ public class GithubService {
 
 		return supplyAsync(() -> {
 
-			String[] listCommonWords = { "the", "a", "an", "are", "and", "not", "be", "for", "on", "to", "of" };
+			String[] listCommonWords = { "the", "a", "an", "are", "and", "not", "be", "for", "on", "to", "of", "in",
+					"by", "is", "or" };
 			Set<String> commonWords = new HashSet<>(Arrays.asList(listCommonWords));
 
 			// Converting Issue list into list of strings
@@ -134,11 +136,13 @@ public class GithubService {
 			}
 
 			// Splitting words
-			List<String> list = (newList).stream().map(w -> w.trim().split("\\s+")).flatMap(Arrays::stream)
-					.filter(q -> !commonWords.contains(q)).collect(Collectors.toList());
+			List<String> list = (newList).stream().map(w -> w.toLowerCase().trim().split("\\s+"))
+					.flatMap(Arrays::stream).filter(q -> !commonWords.contains(q)).collect(Collectors.toList());
+			long count = list.stream().distinct().count();
 			// Mapping words with their frequency
 			Map<String, Integer> wordsCountMap = list.stream().map(eachWord -> eachWord)
-					.collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
+					.collect(Collectors.toMap(w -> w, w -> 1, Integer::sum));
+			wordsCountMap.put("Total Word Count", (int) count);
 
 			// Sorting the result in descending order
 			wordsCountMap = wordsCountMap.entrySet().stream()
@@ -152,7 +156,7 @@ public class GithubService {
 	 * Returns the User details for the provided username
 	 *
 	 * @author Sourav Uttam Sinha 40175660
-	 * @param userName       the user who owns the repository.
+	 * @param userName the user who owns the repository.
 	 * @return CompletionStage<RepositoryDetails> represents the async response
 	 *         containing the process stage of RepositoryDetails object
 	 */
@@ -179,7 +183,9 @@ public class GithubService {
 		});
 	}
 
-	/** List of the search results of the phrase entered by the user
+	/**
+	 * List of the search results of the phrase entered by the user
+	 * 
 	 * @author Ashwin Raghunath 40192120
 	 * @param request incoming request value from search
 	 * @param phrase
@@ -201,8 +207,8 @@ public class GithubService {
 				userRepositoryTopics.setTopics(getTopics(searchRepository));
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
-			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper
-					.getSearchResultsForCurrentSession(request, phrase, userRepositoryTopicsList);
+			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper.getSearchResultsForCurrentSession(request,
+					phrase, userRepositoryTopicsList);
 
 			return searchMap;
 		});
@@ -210,13 +216,13 @@ public class GithubService {
 
 	/**
 	 * @author Trusha Patel
-	 * @param  topic_name The query topic
+	 * @param topic_name The query topic
 	 * @return CompletionStage<SearchedRepositoryDetails> represents the async
 	 *         response containing the process stage of SearchedRepositoryDetails
 	 *         object
 	 */
 
-	public CompletionStage<SearchedRepositoryDetails> getReposByTopics(String topic_name){
+	public CompletionStage<SearchedRepositoryDetails> getReposByTopics(String topic_name) {
 		return CompletableFuture.supplyAsync(() -> {
 			Map<String, String> searchQuery = new HashMap<String, String>();
 			SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
@@ -235,22 +241,24 @@ public class GithubService {
 		});
 
 	}
+
 	/**
 	 * @author Trusha Patel 40192614
 	 * @param searchRepository A SearchRepository object to get the topics for
 	 * @return List of the topics of the queried Repository
 	 */
-	public List<String> getTopics(SearchRepository searchRepository){
+	public List<String> getTopics(SearchRepository searchRepository) {
 		GitHubRequest request = new GitHubRequest();
 		List<String> topic_list = new ArrayList<>();
 		try {
 
-			String url =  searchRepository.getUrl().split("//")[1].split("github.com")[1];
-			request.setUri("/repos"+ url + "/topics");
-			String result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request)))
-					.lines().collect(Collectors.joining("\n"));
+			String url = searchRepository.getUrl().split("//")[1].split("github.com")[1];
+			request.setUri("/repos" + url + "/topics");
+			String result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request))).lines()
+					.collect(Collectors.joining("\n"));
 			JSONObject jsonObject = new JSONObject(result);
-			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(",")).collect(Collectors.toList());
+			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(","))
+					.collect(Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

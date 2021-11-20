@@ -57,7 +57,10 @@ public class SessionHelper {
 				? searchSessionMap.get(sessionValue)
 				: new LinkedHashMap<>();
 		if (searchTerm != null && searchResults != null) {
+			Map<String, List<UserRepositoryTopics>> reverseMap = new LinkedHashMap<>(phraseList);
+			phraseList.clear();
 			phraseList.put(searchTerm, searchResults);
+			phraseList.putAll(reverseMap);
 			searchSessionMap.put(sessionValue, phraseList);
 		}
 		if(searchSessionMap.containsKey(sessionValue))
