@@ -1,5 +1,6 @@
 package services;
 
+import com.typesafe.config.Config;
 import models.*;
 
 import org.eclipse.egit.github.core.Issue;
@@ -54,6 +55,8 @@ public class GithubServiceTest extends WithApplication {
     IssueService issueService;
     @Mock
     UserService userService;
+    @Mock
+    Config config;
 
     @Mock
     GitHubClient mockClient;

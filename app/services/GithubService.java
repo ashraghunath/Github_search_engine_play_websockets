@@ -1,5 +1,6 @@
 package services;
 
+import com.typesafe.config.Config;
 import models.*;
 import org.eclipse.egit.github.core.client.GitHubRequest;
 import play.mvc.Http;
@@ -25,6 +26,8 @@ import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import java.util.stream.Collectors;
 import org.json.*;
+
+import javax.inject.Inject;
 import java.util.stream.Stream;
 
 public class GithubService {
@@ -36,10 +39,14 @@ public class GithubService {
 	private UserService userService;
 	private List<SearchRepository> searchRepositoryList;
 	private SessionHelper sessionHelper;
+	private Config config;
 	Map<Optional<String>, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
 
-	public GithubService() {
+	@Inject
+	public GithubService(Config config) {
+		this.config=config;
 		gitHubClient = new GitHubClient();
+		gitHubClient.setOAuth2Token(config.getString("access.token"));
 		this.repositoryService = new RepositoryService(gitHubClient);
 		this.collaboratorService = new CollaboratorService(gitHubClient);
 		this.issueService = new IssueService(gitHubClient);
@@ -57,7 +64,6 @@ public class GithubService {
 	 *         containing the process stage of RepositoryDetails object
 	 */
 	public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName) {
-
 		return CompletableFuture.supplyAsync(() -> {
 			RepositoryDetails repositoryDetails = new RepositoryDetails();
 			Repository repository = null;
@@ -65,7 +71,7 @@ public class GithubService {
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
 				repository = repositoryService.getRepository(userName, repositoryName);
-				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().limit(20)
+				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().sorted(Comparator.comparing(Issue::getCreatedAt).reversed()).limit(20)
 						.collect(Collectors.toList());
 				repositoryDetails.setRepository(repository);
 				repositoryDetails.setIssues(issues);
@@ -168,7 +174,7 @@ public class GithubService {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				searchRepositoryList = repositoryService.searchRepositories(phrase, 0).stream()
-						.sorted(Comparator.comparing(SearchRepository::getCreatedAt).reversed()).limit(10)
+						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
 						.collect(Collectors.toList());
 			} catch (IOException e) {
 				e.printStackTrace();
