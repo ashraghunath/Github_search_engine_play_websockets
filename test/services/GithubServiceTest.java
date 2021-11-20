@@ -112,7 +112,7 @@ public class GithubServiceTest extends WithApplication {
     	CompletionStage<IssueWordStatistics> issueWordStatistics = githubServiceMock.getAllIssues("userName","MockRepoName");
     	assertNotNull(issueWordStatistics);
     	IssueWordStatistics issueWordStatisticsResult = issueWordStatistics.toCompletableFuture().get();
-    	assertEquals(issueWordStatisticsResult.wordfrequency.size(),9);
+    	assertEquals(issueWordStatisticsResult.wordfrequency.size(),10);
     	assertEquals((int)issueWordStatisticsResult.getWordfrequency().get("null"),2);
     }
 
