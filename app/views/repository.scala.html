@@ -2,16 +2,28 @@
 
 @main("Repository") {
 
-<div class="container">
-    <div class="jumbotron jumbotron-fluid">
-        <h3>Repository Details</h3>
+<div class=".container-fluid">
+    <div class="jumbotron jumbotron-fluid" style="margin:0px;">
+        <h1 style="margin-left: 450px;">Repository Details</h1>
     </div>
 </div>
-
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <ul class="nav navbar-nav navbar-right">
+            @if(repositoryDetails.getIssues().size()>0) {
+            <li><a href="/getRepositoryIssues/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Issues Statistics </a></li>
+            }
+            <li><a href="/getCommits/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Commits Statistics</a></li>
+        </ul>
+    </div>
+</nav>
 <div class="container">
 <dl class="row">
     <dt class="col-sm-3"><h4>Repository name</h4></dt>
     <dd class="col-sm-9"><h4>@repositoryDetails.getRepository().getName()</h4></dd>
+
+    <dt class="col-sm-3"><h4>Repository user</h4></dt>
+    <dd class="col-sm-9"><h4>@repositoryDetails.getRepository().getOwner().getLogin()</h4></dd>
 
     <dt class="col-sm-3"><h4>Description</h4></dt>
     <dd class="col-sm-9"><h4>@repositoryDetails.getRepository().getDescription()</h4></dd>
@@ -28,18 +40,9 @@
     <dt class="col-sm-3"><h4>Issues</h4></dt>
     <dd class="col-sm-9"><h4>@repositoryDetails.getIssues().size()</h4></dd>
 
-
-    @if(repositoryDetails.getIssues().size()>0) {
-    <dt class="col-sm-3"><h4>Issues statistics page</h4></dt>
-    <dd class="col-sm-9"><h4><a href="/getRepositoryIssues/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()">Issues statistics page</a></h4></dd>
-    }
-
-    <dt class="col-sm-3"><h4>Commit page</h4></dt>
-    <dd class="col-sm-9"><h4><a href="/getCommits/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()">Commit page</a></h4></dd>
-
     </dd>
 </dl>
-    <table class="table">
+    <table border="1" class="table">
         <thead>
         <tr><th>Issue</th><th>Created At</th><th>State</th><th>URL</th>
         </thead>
