@@ -30,6 +30,10 @@ import org.json.*;
 import javax.inject.Inject;
 import java.util.stream.Stream;
 
+
+/**
+ * calls github api according to the service requested by the user for different pages
+ */
 public class GithubService {
 
 	private RepositoryService repositoryService;

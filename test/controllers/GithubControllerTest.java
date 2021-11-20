@@ -34,6 +34,9 @@ import static org.mockito.Mockito.*;
 import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.*;
 
+/**
+ * Test class for GithubController using mockito
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class GithubControllerTest extends WithApplication {
 

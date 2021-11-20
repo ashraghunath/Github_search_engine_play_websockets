@@ -15,6 +15,10 @@ import views.html.repository;
 
 import static play.mvc.Results.ok;
 
+
+/**
+ * Handles all incoming http requests and maps it to a particular method
+ */
 public class GithubController {
 
 	private final FormFactory formFactory;
@@ -46,6 +50,12 @@ public class GithubController {
 	    return ok(views.html.index.render(null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
 	}
 
+	/**
+	 * Returns Result View for the Search page after search click
+	 * @author Anmol malhotra 40201452
+	 * @param request object
+	 * @return Result View for the search page after click
+	 */
 	public CompletionStage<Result> search(Http.Request request) {
 		DynamicForm form = formFactory.form().bindFromRequest(request);
 		String phrase = form.get("phrase");

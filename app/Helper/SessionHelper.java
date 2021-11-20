@@ -7,6 +7,9 @@ import java.util.UUID;
 import models.UserRepositoryTopics;
 import play.mvc.Http;
 
+/**
+ * Handles session related activities across multiples browser instances
+ */
 public class SessionHelper {
 	private static final Map<String, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
 	private static final String SESSION_KEY = "sessionKey";

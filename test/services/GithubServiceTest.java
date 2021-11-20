@@ -39,6 +39,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
+/**
+ * Test class for GithubService using mockito
+ */
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class GithubServiceTest extends WithApplication {
 
