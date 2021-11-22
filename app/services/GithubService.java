@@ -224,22 +224,26 @@ public class GithubService {
 	 *         object
 	 */
 
-	public CompletionStage<SearchedRepositoryDetails> getReposByTopics(String topic_name) {
+	public CompletionStage<List<UserRepositoryTopics>> getReposByTopics(String topic_name){
 		return CompletableFuture.supplyAsync(() -> {
 			Map<String, String> searchQuery = new HashMap<String, String>();
-			SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
 			searchQuery.put("topic", topic_name);
-			List<SearchRepository> searchRes = null;
+			List<SearchRepository> searchRepositoryList = null;
 			try {
-				searchRes = repositoryService.searchRepositories(searchQuery).stream()
+				searchRepositoryList = repositoryService.searchRepositories(searchQuery).stream()
 						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
 						.collect(Collectors.toList());
-				searchResDetails.setRepos(searchRes);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			searchResDetails.setTopic(topic_name);
-			return searchResDetails;
+			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
+			for (SearchRepository searchRepository : searchRepositoryList) {
+				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
+						searchRepository.getName());
+				userRepositoryTopics.setTopics(getTopics(searchRepository));
+				userRepositoryTopicsList.add(userRepositoryTopics);
+			}
+			return userRepositoryTopicsList;
 		});
 
 	}
