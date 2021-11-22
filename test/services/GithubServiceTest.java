@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
@@ -174,43 +175,78 @@ public class GithubServiceTest extends WithApplication {
      * @throws InterruptedException
      * @throws ExecutionException
      */
+//    @Test
+//    public void getReposByTopicTest() throws IOException, InterruptedException, ExecutionException {
+//        List<SearchRepository> searchRepos = searchRepos();
+//        when(repositoryService.searchRepositories(anyMap())).thenReturn(searchRepos);
+//        CompletionStage<SearchedRepositoryDetails> searchedReposDetails = githubServiceMock.getReposByTopics("mocktopic");
+//        assertNotNull(searchedReposDetails);
+//        SearchedRepositoryDetails details = searchedReposDetails.toCompletableFuture().get();
+//        List<String> actual = new ArrayList<>();
+//        for (SearchRepository repo:details.getRepo()) {
+//            actual.add(repo.getName());
+//            //System.out.println("repo:"+ repo.getName());
+//        }
+//        List<String> expected = Arrays.asList("repo2", "repo1");
+//        assertEquals(expected,actual);
+//    }
+    private InputStream topicInputStream() {
+        String mockTopics = "{" +
+                "\"names\": [" +
+                "\"topic1\"," +
+                "\"topic2\"," +
+                "\"topic3\"" +
+                "]" +
+                "}";
+        InputStream stream = new ByteArrayInputStream(mockTopics.getBytes(StandardCharsets.UTF_8));
+        return stream;
+    }
+
     @Test
     public void getReposByTopicTest() throws IOException, InterruptedException, ExecutionException {
         List<SearchRepository> searchRepos = searchRepos();
+        when(mockClient.getStream(any())).thenReturn(topicInputStream());
         when(repositoryService.searchRepositories(anyMap())).thenReturn(searchRepos);
-        CompletionStage<SearchedRepositoryDetails> searchedReposDetails = githubServiceMock.getReposByTopics("mocktopic");
+        CompletionStage<List<UserRepositoryTopics>> searchedReposDetails = githubServiceMock.getReposByTopics("mocktopic");
         assertNotNull(searchedReposDetails);
-        SearchedRepositoryDetails details = searchedReposDetails.toCompletableFuture().get();
-        List<String> actual = new ArrayList<>();
-        for (SearchRepository repo:details.getRepo()) {
-            actual.add(repo.getName());
-            //System.out.println("repo:"+ repo.getName());
-        }
-        List<String> expected = Arrays.asList("repo2", "repo1");
-        assertEquals(expected,actual);
+        List<UserRepositoryTopics> details = searchedReposDetails.toCompletableFuture().get();
+        assertEquals(details.get(0).getName(),"repo1");
     }
+
 
     /**
      * mock object for testing getRepositoriesByTopics
      * @author Trusha Patel
      *
      */
-    private List<SearchRepository> searchRepos() {
-        List<SearchRepository> searchItem = new ArrayList<>();
-        Calendar my_cal = Calendar.getInstance();
-        SearchRepository searchMock1 = mock(SearchRepository.class);
-        my_cal.set(2010,3,22);
-        when(searchMock1.getPushedAt()).thenReturn(my_cal.getTime());
-        //when(searchMock1.getOwner()).thenReturn("user1");
-        when(searchMock1.getName()).thenReturn("repo1");
-        SearchRepository searchMock2 = mock(SearchRepository.class);
-        my_cal.set(2011,3,22);
-        when(searchMock2.getPushedAt()).thenReturn(my_cal.getTime());
-        //when(searchMock2.getOwner()).thenReturn("user2");
-        when(searchMock2.getName()).thenReturn("repo2");
-        searchItem.add(searchMock1);
-        searchItem.add(searchMock2);
-        return searchItem.stream().sorted(Comparator.comparing(SearchRepository::getPushedAt)).collect(Collectors.toList());
+//    private List<SearchRepository> searchRepos() {
+//        List<SearchRepository> searchItem = new ArrayList<>();
+//        Calendar my_cal = Calendar.getInstance();
+//        SearchRepository searchMock1 = mock(SearchRepository.class);
+//        my_cal.set(2010,3,22);
+//        when(searchMock1.getPushedAt()).thenReturn(my_cal.getTime());
+//        //when(searchMock1.getOwner()).thenReturn("user1");
+//        when(searchMock1.getName()).thenReturn("repo1");
+//        SearchRepository searchMock2 = mock(SearchRepository.class);
+//        my_cal.set(2011,3,22);
+//        when(searchMock2.getPushedAt()).thenReturn(my_cal.getTime());
+//        //when(searchMock2.getOwner()).thenReturn("user2");
+//        when(searchMock2.getName()).thenReturn("repo2");
+//        searchItem.add(searchMock1);
+//        searchItem.add(searchMock2);
+//        return searchItem.stream().sorted(Comparator.comparing(SearchRepository::getPushedAt)).collect(Collectors.toList());
+//    }
+    private List<SearchRepository> searchRepos() throws IOException {
+        SearchRepository searchRepositoryMock1 = mock(SearchRepository.class);
+        when(searchRepositoryMock1.getName()).thenReturn("repo1");
+        when(searchRepositoryMock1.getOwner()).thenReturn("owner1");
+        when(searchRepositoryMock1.getUrl()).thenReturn("https://github.com/mockuser/mockrepo");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2012,11,12);
+        when(searchRepositoryMock1.getPushedAt()).thenReturn(calendar.getTime());
+        List<SearchRepository> list = new ArrayList<>();
+        list.add(searchRepositoryMock1);
+        return list;
     }
 
     /**
@@ -238,18 +274,7 @@ public class GithubServiceTest extends WithApplication {
      * @return
      */
 
-    private InputStream topicInputStream() {
-        String mockTopics = "{" +
-                "\"names\": [" +
-                "\"topic1\"," +
-                "\"topic2\"," +
-                "\"topic3\"" +
-                "]" +
-                "}";
-        InputStream stream = new ByteArrayInputStream(mockTopics.getBytes(StandardCharsets.UTF_8));
-        System.out.println(stream);
-        return stream;
-    }
+
 
     /**
      * Test case for searchResults method

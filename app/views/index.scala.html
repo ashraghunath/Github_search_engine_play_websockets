@@ -27,7 +27,8 @@
             </thead>
             <tbody>
             @for( userRepositoryTopics <- userRepositoryTopicsList ) {
-                <tr><td><a href="/getUserDetails/@userRepositoryTopics.getOwner()">@userRepositoryTopics.getOwner()</a></td><td><a href="/getRepositoryDetails/@userRepositoryTopics.getOwner()/@userRepositoryTopics.getName()">@userRepositoryTopics.getName()</a></td>
+                <tr><td><a href="/getUserDetails/@userRepositoryTopics.getOwner()">@userRepositoryTopics.getOwner()</a></td>
+                    <td><a href="/getRepositoryDetails/@userRepositoryTopics.getOwner()/@userRepositoryTopics.getName()">@userRepositoryTopics.getName()</a></td>
                 <td>
                     @for(topic <- userRepositoryTopics.getTopics()) {
                     <a href="/getReposByTopics/@topic">@topic</a>

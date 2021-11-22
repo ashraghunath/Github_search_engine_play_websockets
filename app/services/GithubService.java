@@ -115,7 +115,7 @@ public class GithubService {
 	 * and repository name
 	 * 
 	 * @author Anushka Shetty 40192371
-	 * @param List<Issue> List of all the issues for the given username and
+	 * @param List <Issue> List of all the issues for the given username and
 	 *                    repository name
 	 * @return CompletableFuture<IssueWordStatistics> represents the async response
 	 *         containing the process stage of IssueWordStatistics object
@@ -201,22 +201,28 @@ public class GithubService {
 	 *         object
 	 */
 
-	public CompletionStage<SearchedRepositoryDetails> getReposByTopics(String topic_name){
+	public CompletionStage<List<UserRepositoryTopics>> getReposByTopics(String topic_name){
 		return CompletableFuture.supplyAsync(() -> {
 			Map<String, String> searchQuery = new HashMap<String, String>();
-			SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
+			//SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
 			searchQuery.put("topic", topic_name);
-			List<SearchRepository> searchRes = null;
+			List<SearchRepository> searchRepositoryList = null;
 			try {
-				searchRes = repositoryService.searchRepositories(searchQuery).stream()
+				searchRepositoryList = repositoryService.searchRepositories(searchQuery).stream()
 						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
 						.collect(Collectors.toList());
-				searchResDetails.setRepos(searchRes);
+				//searchResDetails.setRepos(searchRes);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			searchResDetails.setTopic(topic_name);
-			return searchResDetails;
+			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
+			for (SearchRepository searchRepository : searchRepositoryList) {
+				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
+						searchRepository.getName());
+				userRepositoryTopics.setTopics(getTopics(searchRepository));
+				userRepositoryTopicsList.add(userRepositoryTopics);
+			}
+			return userRepositoryTopicsList;
 		});
 
 	}
@@ -234,6 +240,7 @@ public class GithubService {
 			request.setUri("/repos"+ url + "/topics");
 			String result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request)))
 					.lines().collect(Collectors.joining("\n"));
+			System.out.println(result);
 			JSONObject jsonObject = new JSONObject(result);
 			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(",")).collect(Collectors.toList());
 		} catch (IOException e) {
