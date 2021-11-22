@@ -1,9 +1,6 @@
 package controllers;
 
-import models.IssueWordStatistics;
-import models.RepositoryDetails;
-import models.SearchedRepositoryDetails;
-import models.UserDetails;
+import models.*;
 import org.apache.http.HttpStatus;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.SearchRepository;
@@ -198,23 +195,21 @@ public class GithubControllerTest extends WithApplication {
      * @author Trusha Patel
      * @return CompletionStage<Object> represents the async response containing the process stage of SearchedRepository
      */
-    private CompletionStage<SearchedRepositoryDetails> searchedRepositoriesObject(){
+    private CompletionStage<List<UserRepositoryTopics>> searchedRepositoriesObject(){
         return CompletableFuture.supplyAsync(() -> {
-            SearchedRepositoryDetails searchedRepositoryDetails = new SearchedRepositoryDetails();
-            List<SearchRepository> searchItem = new ArrayList<>();
-            SearchRepository searchMock1 = mock(SearchRepository.class);
+            List<UserRepositoryTopics> searchItem = new ArrayList<>();
+            UserRepositoryTopics searchMock1 = mock(UserRepositoryTopics.class);
             when(searchMock1.getOwner()).thenReturn("user1");
             when(searchMock1.getName()).thenReturn("repo1");
-            SearchRepository searchMock2 = mock(SearchRepository.class);
+            when(searchMock1.getTopics()).thenReturn(Arrays.asList("topic1","topic2"));
+            UserRepositoryTopics searchMock2 = mock(UserRepositoryTopics.class);
             when(searchMock2.getOwner()).thenReturn("user2");
             when(searchMock2.getName()).thenReturn("repo2");
+            when(searchMock2.getTopics()).thenReturn(Arrays.asList("topic3","topic4"));
             searchItem.add(searchMock1);
             searchItem.add(searchMock2);
-            searchedRepositoryDetails.setRepos(searchItem);
-            searchedRepositoryDetails.setTopic("mocktopic");
-            return searchedRepositoryDetails;
+            return searchItem;
         });
     }
-
 }
 

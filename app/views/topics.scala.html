@@ -1,22 +1,30 @@
-@(repositories: SearchedRepositoryDetails)
+@(repositories: List[UserRepositoryTopics])
 
 @main("Repository") {
 
-<div class="container">
-    <div class="jumbotron jumbotron-fluid">
-        <h3>Repositories From the topic: @repositories.getTopic()</h3>
+<div class=".container-fluid">
+    <div class="jumbotron jumbotron-fluid" style="margin:0px;">
+        <h2 style="margin-left: 450px;">Repositories from the selected topic</h2>
     </div>
 </div>
 
 <div class="container">
 
     <table border="1" class="table">
-        <thead>
-        <tr><th>RepositoryName</th><th>User</th>
+        <thead class="thead-light">
+        <tr><th>Repository</th><th>User</th><th>Topics</th>
         </thead>
         <tbody>
-        @for(repo <- repositories.getRepo()) {
-        <tr><td><a href="/getRepositoryDetails/@repo.getOwner()/@repo.getName()">@repo.getName()</a></td><td><a href = "/getUserDetails/@repo.getOwner()">@repo.getOwner()</a></td></tr>
+        @for(repo <- repositories) {
+        <tr>
+            <td><a href="/getRepositoryDetails/@repo.getOwner()/@repo.getName()">@repo.getName()</a></td>
+            <td><a href = "/getUserDetails/@repo.getOwner()">@repo.getOwner()</a></td>
+            <td>
+                @for(topic<-repo.getTopics()) {
+                <a href="/getReposByTopics/@topic">@topic</a>
+                }
+            </td>
+        </tr>
         }
         </tbody>
     </table>
