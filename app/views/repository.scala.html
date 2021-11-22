@@ -13,7 +13,7 @@
             @if(repositoryDetails.getIssues().size()>0) {
             <li><a href="/getRepositoryIssues/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Issues Statistics </a></li>
             }
-            <li><a href="/getCommits/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Commits Statistics</a></li>
+            <li><a href="/getCommitStats/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Commits Statistics</a></li>
         </ul>
     </div>
 </nav>

@@ -1,5 +1,7 @@
 package controllers;
 
+import Helper.SessionHelper;
+import play.cache.AsyncCacheApi;
 import play.data.DynamicForm;
 import play.data.FormFactory;
 import play.mvc.Http;
@@ -7,11 +9,7 @@ import play.mvc.Result;
 import services.GithubService;
 
 import javax.inject.Inject;
-import Helper.SessionHelper;
-
 import java.util.concurrent.CompletionStage;
-import play.cache.*;
-import views.html.repository;
 
 import static play.mvc.Results.ok;
 
@@ -124,6 +122,11 @@ public class GithubController {
 						() -> githubService.getUserDetails(userName)
 								.thenApplyAsync(user -> ok(views.html.user.render(user))));
 		return results;
+	}
+
+	public CompletionStage<Result> getRepositoryCommits(String userName, String repositoryName) {
+		return githubService.getCommitsForRepository(userName, repositoryName)
+				.thenApplyAsync(commits -> ok(views.html.commits.render(commits)));
 	}
 
 }

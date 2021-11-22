@@ -3,16 +3,15 @@ package services;
 import com.typesafe.config.Config;
 import models.*;
 
-import org.eclipse.egit.github.core.Issue;
-import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.SearchRepository;
-import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.*;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.GitHubRequest;
+import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.fluentlenium.core.search.Search;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.OngoingStubbing;
 import play.Application;
 import play.inject.guice.GuiceApplicationBuilder;
 import play.mvc.Http;
@@ -35,8 +35,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -60,6 +59,8 @@ public class GithubServiceTest extends WithApplication {
     UserService userService;
     @Mock
     Config config;
+    @Mock
+    CommitService commitService;
 
     @Mock
     GitHubClient mockClient;
@@ -298,5 +299,42 @@ public class GithubServiceTest extends WithApplication {
         return list;
     }
 
+
+
+    /**
+     * Test Case for Commits Page
+     * @author Anmol Malhotra 40201452
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @Test
+    public void commitTest() throws IOException, ExecutionException, InterruptedException {
+        when(repositoryService.getRepository(anyString(), anyString())).thenReturn(repository());
+        List<RepositoryCommit> repositoryCommit = new ArrayList<>();
+        RepositoryCommit repoCommit1 = new RepositoryCommit();
+        repoCommit1.setSha("commitId");
+        User user1 = new User();
+        user1.setLogin("Anmol");
+        repoCommit1.setAuthor(user1);
+        repositoryCommit.add(repoCommit1);
+        when(commitService.getCommits(any())).thenReturn(repositoryCommit);
+        when(mockClient.getStream(any())).thenReturn(commitStatsInputStream());
+        CompletionStage<CommitDetails> result = githubServiceMock.getCommitsForRepository("anmol", "repo");
+        CommitDetails finalResult = result.toCompletableFuture().get();
+        Assert.assertTrue(result.toCompletableFuture().isDone());
+    }
+
+    private InputStream commitStatsInputStream() {
+        String mockTopics = "{\" +\n" +
+                "                \"\\\"addition\\\":0\" +\n" +
+                "                \"\\\"deletion\\\":40\" +\n" +
+                "                \"\\\"name\\\":\\\"Anmol\\\"\" +\n" +
+                "                \"\\\"sha\\\":\\\"afdfafdfad\\\"\" +\n" +
+                "                \"}\"";
+        InputStream stream = new ByteArrayInputStream(mockTopics.getBytes(StandardCharsets.UTF_8));
+        System.out.println(stream);
+        return stream;
+    }
 
 }

@@ -1,0 +1,56 @@
+@(commitDetails: CommitDetails)
+
+@main("commitDetails"){
+
+<div class="container">
+    <div class="jumbotron jumbotron-fluid">
+        <h3>Commit Details</h3>
+    </div>
+</div>
+
+<div class="container">
+    <dl class="row">
+        <dt class="col-sm-3"><h4>Repository Name</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getRepositoryName()</h4></dd>
+
+        <dt class="col-sm-3"><h4>Total Commits in the Repository</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getTotalCommitsOnRepository()</h4></dd>
+
+        <dt class="col-sm-3"><h4>Minimum Additions</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getMinimumAdditions()</h4></dd>
+
+        <dt class="col-sm-3"><h4>Minimum Deletions</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getMinimumDeletions()</h4></dd>
+
+        <dt class="col-sm-3"><h4>Maximum Additions</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getMaximumAdditions()</h4></dd>
+
+        <dt class="col-sm-3"><h4>Maximum Deletions</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getMaximumDeletions()</h4></dd>
+
+        <dt class="col-sm-3"><h4>Average Additions</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getAverageAdditions()</h4></dd>
+
+        <dt class="col-sm-3"><h4>Average Deletions</h4></dt>
+        <dd class="col-sm-9"><h4>@commitDetails.getAverageDeletions()</h4></dd>
+    </dl>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Author</th>
+            <th>Commit count</th>
+        </thead>
+        <tbody>
+        @for((key, value) <- commitDetails.getMapOfUserAndCommits()) {
+        <tr>
+            <td>@key</td>
+            <td>@value</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+</div>
+<hr/>
+}
