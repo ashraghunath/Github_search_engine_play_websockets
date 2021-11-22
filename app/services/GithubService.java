@@ -1,35 +1,34 @@
 package services;
 
+import Helper.SessionHelper;
 import com.typesafe.config.Config;
 import models.*;
+import org.eclipse.egit.github.core.*;
+import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.GitHubRequest;
+import org.eclipse.egit.github.core.service.*;
+import org.json.JSONObject;
 import play.mvc.Http;
 
-import org.eclipse.egit.github.core.Issue;
-import org.eclipse.egit.github.core.Repository;
-
-import org.eclipse.egit.github.core.SearchRepository;
-import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.client.PageIterator;
-import org.eclipse.egit.github.core.service.CollaboratorService;
-import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-import Helper.SessionHelper;
-import java.io.IOException;
+import javax.inject.Inject;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import org.json.*;
 
 import javax.inject.Inject;
 import java.util.stream.Stream;
 
+
+/**
+ * calls github api according to the service requested by the user for different pages
+ */
 public class GithubService {
 
 	private RepositoryService repositoryService;
@@ -40,11 +39,13 @@ public class GithubService {
 	private List<SearchRepository> searchRepositoryList;
 	private SessionHelper sessionHelper;
 	private Config config;
+	private CommitService commitService;
+	private CommitStats commitStats;
 	Map<Optional<String>, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
 
 	@Inject
 	public GithubService(Config config) {
-		this.config=config;
+		this.config = config;
 		gitHubClient = new GitHubClient();
 		gitHubClient.setOAuth2Token(config.getString("access.token"));
 		this.repositoryService = new RepositoryService(gitHubClient);
@@ -52,16 +53,19 @@ public class GithubService {
 		this.issueService = new IssueService(gitHubClient);
 		this.userService = new UserService(gitHubClient);
 		this.sessionHelper = new SessionHelper();
+		this.commitService = new CommitService(gitHubClient);
+		this.commitStats = new CommitStats();
 	}
 
 	/**
 	 * Returns the Repository details for the provided username and repository name
 	 * 
-	 * @author Ashwin Raghunath 40192120
+	 *
 	 * @param userName       the user who owns the repository.
 	 * @param repositoryName the name of the repository to be searched for.
 	 * @return CompletionStage<RepositoryDetails> represents the async response
 	 *         containing the process stage of RepositoryDetails object
+	 * @author Ashwin Raghunath 40192120
 	 */
 	public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName) {
 		return CompletableFuture.supplyAsync(() -> {
@@ -71,7 +75,8 @@ public class GithubService {
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
 				repository = repositoryService.getRepository(userName, repositoryName);
-				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream().sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
+				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream()
+						.sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
 						.collect(Collectors.toList());
 				repositoryDetails.setRepository(repository);
 				repositoryDetails.setIssues(issues);
@@ -87,11 +92,12 @@ public class GithubService {
 	 * Returns the Word level Statistics for all Issues for the provided username
 	 * and repository name
 	 * 
-	 * @author Anushka Shetty 40192371
+	 *
 	 * @param userName       the user who owns the repository.
 	 * @param repositoryName the name of the repository to be searched for.
 	 * @return CompletionStage<IssueWordStatistics> represents the async response
 	 *         containing the process stage of IssueWordStatistics object
+	 * @author Anushka Shetty 40192371
 	 */
 
 	public CompletionStage<IssueWordStatistics> getAllIssues(String userName, String repositoryName) {
@@ -113,18 +119,22 @@ public class GithubService {
 	/**
 	 * Returns the Word level Statistics for all Issues for the provided username
 	 * and repository name
-	 * 
-	 * @author Anushka Shetty 40192371
+	 *
 	 * @param List <Issue> List of all the issues for the given username and
 	 *                    repository name
+	 * @param issues List of all the issues for the given username and repository
+	 *              name
 	 * @return CompletableFuture<IssueWordStatistics> represents the async response
 	 *         containing the process stage of IssueWordStatistics object
+	 * @author Anushka Shetty 40192371
+	 *
 	 */
 	public CompletableFuture<IssueWordStatistics> getWordLevelStatistics(final List<Issue> issues) {
 
 		return supplyAsync(() -> {
 
-			String[] listCommonWords = { "the", "a", "an", "are", "and", "not", "be", "for", "on", "to", "of" };
+			String[] listCommonWords = { "the", "a", "an", "are", "and", "not", "be", "for", "on", "to", "of", "in",
+					"by", "is", "or" };
 			Set<String> commonWords = new HashSet<>(Arrays.asList(listCommonWords));
 
 			// Converting Issue list into list of strings
@@ -134,11 +144,13 @@ public class GithubService {
 			}
 
 			// Splitting words
-			List<String> list = (newList).stream().map(w -> w.trim().split("\\s+")).flatMap(Arrays::stream)
-					.filter(q -> !commonWords.contains(q)).collect(Collectors.toList());
+			List<String> list = (newList).stream().map(w -> w.toLowerCase().trim().split("\\s+"))
+					.flatMap(Arrays::stream).filter(q -> !commonWords.contains(q)).collect(Collectors.toList());
+			long count = list.stream().distinct().count();
 			// Mapping words with their frequency
 			Map<String, Integer> wordsCountMap = list.stream().map(eachWord -> eachWord)
-					.collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
+					.collect(Collectors.toMap(w -> w, w -> 1, Integer::sum));
+			wordsCountMap.put("Total Word Count", (int) count);
 
 			// Sorting the result in descending order
 			wordsCountMap = wordsCountMap.entrySet().stream()
@@ -147,6 +159,16 @@ public class GithubService {
 			return new IssueWordStatistics(wordsCountMap);
 		});
 	}
+
+	/**
+	 * Returns the User details for the provided username
+	 *
+	 * @param userName the user who owns the repository.
+	 * @return CompletionStage<RepositoryDetails> represents the async response
+	 *         containing the process stage of RepositoryDetails object
+	 * @author Saurav Sinha
+	 *
+	 */
 
 	public CompletionStage<UserDetails> getUserDetails(String userName) {
 		return CompletableFuture.supplyAsync(() -> {
@@ -170,6 +192,14 @@ public class GithubService {
 		});
 	}
 
+	/**
+	 * List of the search results of the phrase entered by the user
+	 *
+	 * @param request incoming request value from search
+	 * @param phrase
+	 * @return map of the results after searching for repositories
+	 * @author Ashwin Raghunath 40192120
+	 */
 	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResults(Http.Request request, String phrase) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
@@ -186,32 +216,31 @@ public class GithubService {
 				userRepositoryTopics.setTopics(getTopics(searchRepository));
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
-			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper
-					.getSearchResultsForCurrentSession(request, phrase, userRepositoryTopicsList);
+			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper.getSearchResultsForCurrentSession(request,
+					phrase, userRepositoryTopicsList);
 
 			return searchMap;
 		});
 	}
 
 	/**
-	 * @author Trusha Patel
-	 * @param  topic_name The query topic
+	 *
+	 * @param topic_name The query topic
 	 * @return CompletionStage<SearchedRepositoryDetails> represents the async
 	 *         response containing the process stage of SearchedRepositoryDetails
 	 *         object
+	 * @author Trusha Patel 40192614
 	 */
 
 	public CompletionStage<List<UserRepositoryTopics>> getReposByTopics(String topic_name){
 		return CompletableFuture.supplyAsync(() -> {
 			Map<String, String> searchQuery = new HashMap<String, String>();
-			//SearchedRepositoryDetails searchResDetails = new SearchedRepositoryDetails();
 			searchQuery.put("topic", topic_name);
 			List<SearchRepository> searchRepositoryList = null;
 			try {
 				searchRepositoryList = repositoryService.searchRepositories(searchQuery).stream()
 						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
 						.collect(Collectors.toList());
-				//searchResDetails.setRepos(searchRes);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -226,12 +255,13 @@ public class GithubService {
 		});
 
 	}
+
 	/**
-	 * @author Trusha Patel 40192614
 	 * @param searchRepository A SearchRepository object to get the topics for
 	 * @return List of the topics of the queried Repository
+	 * @author Trusha Patel 40192614
 	 */
-	public List<String> getTopics(SearchRepository searchRepository){
+	public List<String> getTopics(SearchRepository searchRepository) {
 		GitHubRequest request = new GitHubRequest();
 		List<String> topic_list = new ArrayList<>();
 		try {
@@ -240,12 +270,169 @@ public class GithubService {
 			request.setUri("/repos"+ url + "/topics");
 			String result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request)))
 					.lines().collect(Collectors.joining("\n"));
-			System.out.println(result);
 			JSONObject jsonObject = new JSONObject(result);
-			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(",")).collect(Collectors.toList());
+			topic_list = Arrays.stream(jsonObject.get("names").toString().replace("[", "").replace("]", "").split(","))
+					.collect(Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		if (topic_list.isEmpty()) {
+			topic_list.add("No Topics");
+		}
 		return topic_list;
+	}
+
+
+	/**
+	 * @param userName       the user who owns the repository.
+	 * @param repositoryName the name of the repository to be searched for.
+	 * @return Commit Stats for the Repository with the Top Committers
+	 * @author Anmol Malhotra 40201452
+	 */
+	public CompletionStage<CommitDetails> getCommitsForRepository(String userName, String repositoryName) {
+		return supplyAsync(() -> {
+			CommitDetails commitDetails = new CommitDetails();
+			try {
+				Repository repository = repositoryService.getRepository(userName, repositoryName);
+				List<RepositoryCommit> listOfCommits = commitService.getCommits(repository).stream().limit(100).collect(Collectors.toList());
+
+				LinkedHashMap<String, Integer> mapOfTop10UsersAndCommitCounts = sortHashMap(getMapOfTop10UsersAndCommitCounts(listOfCommits));
+
+				List<String> listOfCommitIds = listOfCommits.stream().limit(100).map(RepositoryCommit::getSha).collect(Collectors.toList());
+				List<Commits> listOfCommitStats = getListOfCommitStats(userName, repositoryName, listOfCommitIds);
+
+				List<Commits> customListOfCommitsData = listOfCommitStats.parallelStream()
+						.map(commitStat -> new Commits(commitStat.getName(), commitStat.getAdditions(), commitStat.getDeletions()))
+						.collect(Collectors.toList());
+
+				setMinMaxAndAverageAdditionDeletions(commitDetails, customListOfCommitsData);
+
+				commitDetails.setTotalCommitsOnRepository(listOfCommits.size());
+				commitDetails.setRepositoryName(repositoryName);
+				commitDetails.setMapOfUserAndCommits(mapOfTop10UsersAndCommitCounts);
+
+			} catch (IOException exception) {
+				exception.printStackTrace();
+			}
+			return commitDetails;
+		});
+	}
+
+	/**
+	 * @param unsortedHashMap		unsorted hashMap for the Top Committers in the Repository
+	 * @return Sorted Linked HashMap in reverse Order of the number of commits per user.
+	 * @author Anmol Malhotra 40201452
+	 */
+	public LinkedHashMap<String, Integer> sortHashMap(Map<String, Integer> unsortedHashMap) {
+		LinkedHashMap<String, Integer> sortedLinkedHashMap = new LinkedHashMap<>();
+
+		unsortedHashMap.entrySet()
+				.stream()
+				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+				.forEachOrdered(sortedPair -> sortedLinkedHashMap.put(sortedPair.getKey(), sortedPair.getValue()));
+		return sortedLinkedHashMap;
+	}
+
+	/**
+	 * @param listOfCommits	list of top 100 commits for the repository
+	 * @return Unsorted Map of User and Commit count
+	 * @author Anmol Malhotra 40201452
+	 */
+	private Map<String, Integer> getMapOfTop10UsersAndCommitCounts(List<RepositoryCommit> listOfCommits) {
+		return listOfCommits
+				.parallelStream()
+				.collect(Collectors.toMap(commit -> commit.getAuthor().getLogin(), commit -> 1, Integer::sum));
+	}
+
+	/**
+	 * @param commitDetails	Model for fetching Commit related data on the UI.
+	 * @param customListOfCommitsData	custom-made list of Commits Data
+	 * @author Anmol Malhotra 40201452
+	 */
+	private void setMinMaxAndAverageAdditionDeletions(CommitDetails commitDetails, List<Commits> customListOfCommitsData) {
+		Optional<Commits> maxAdditionsCommit = (customListOfCommitsData.parallelStream().max(Comparator.comparing(Commits::getAdditions)));
+		int maxAdditions = (maxAdditionsCommit.map(Commits::getAdditions).orElse(0));
+
+		Optional<Commits> minAdditionsCommit = (customListOfCommitsData.parallelStream().min(Comparator.comparing(Commits::getAdditions)));
+		int minAdditions = (maxAdditionsCommit.map(Commits::getAdditions).orElse(0));
+
+		Optional<Commits> maxDeletionsCommit = (customListOfCommitsData.parallelStream().max(Comparator.comparing(Commits::getDeletions)));
+		int maxDeletions = (maxAdditionsCommit.map(Commits::getDeletions).orElse(0));
+
+		Optional<Commits> minDeletionsCommit = (customListOfCommitsData.parallelStream().max(Comparator.comparing(Commits::getDeletions)));
+		int minDeletions = (maxAdditionsCommit.map(Commits::getDeletions).orElse(0));
+
+		double averageAdditions = (customListOfCommitsData.parallelStream()
+				.mapToDouble(Commits::getAdditions)
+				.reduce(0, Double::sum)) / customListOfCommitsData.size();
+
+		double averageDeletions = (customListOfCommitsData.parallelStream()
+				.mapToDouble(Commits::getDeletions)
+				.reduce(0, Double::sum)) / customListOfCommitsData.size();
+
+		commitDetails.setMinimumDeletions(minDeletions);
+		commitDetails.setMaximumDeletions(maxDeletions);
+		commitDetails.setAverageDeletions((int) averageDeletions);
+		commitDetails.setMinimumAdditions(minAdditions);
+		commitDetails.setMaximumAdditions(maxAdditions);
+		commitDetails.setAverageAdditions((int) averageAdditions);
+	}
+
+	/**
+	 * @param userName       the user who owns the repository.
+	 * @param repositoryName the name of the repository to be searched for.
+	 * @param listOfCommitIds	list of all the commit ids for which Commit Data is required.
+	 * @return Returns list of Commit Stats.
+	 * @author Anmol Malhotra 40201452
+	 */
+	private List<Commits> getListOfCommitStats(String userName, String repositoryName, List<String> listOfCommitIds) {
+		List<Commits> commitStatsList = new ArrayList<>();
+		listOfCommitIds.forEach(commitId -> {
+			try {
+				commitStatsList.add(getCommitStatById(userName, repositoryName, commitId).get()	);
+			} catch (IOException | InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		});
+		return commitStatsList;
+	}
+
+	/**
+	 * @param userName       the user who owns the repository.
+	 * @param repositoryName the name of the repository to be searched for.
+	 * @param commitId commit id for which Commit Data is required.
+	 * @return Returns Commit Stats for the mentioned commit-id.
+	 * @author Anmol Malhotra 40201452
+	 */
+	private CompletableFuture<Commits> getCommitStatById(String userName, String repositoryName, String commitId) throws IOException {
+		return CompletableFuture.supplyAsync(() -> {
+			GitHubRequest request = new GitHubRequest();
+			request.setUri("/repos/" + userName + "/" + repositoryName + "/commits/" + commitId);
+			String result = null;
+			try {
+				result = new BufferedReader(new InputStreamReader(gitHubClient.getStream(request)))
+						.lines().collect(Collectors.joining("\n"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			JSONObject jsonResult = new JSONObject(result);
+			System.out.println(jsonResult);
+
+			Commits commits = new Commits();
+			setCommitsData(commits, jsonResult);
+			return commits;
+		});
+	}
+
+	/**
+	 * @param commits commit stats data for one commit
+	 * @param jsonResult json result from the commit-stats data API
+	 * @author Anmol Malhotra 40201452
+	 */
+	private void setCommitsData(Commits commits, JSONObject jsonResult) {
+		commits.setName(jsonResult.getJSONObject("author").getString("login"));
+		commits.setSha(jsonResult.getString("sha"));
+		commits.setAdditions(jsonResult.getJSONObject("stats").getInt("additions"));
+		commits.setDeletions(jsonResult.getJSONObject("stats").getInt("deletions"));
 	}
 }

@@ -7,6 +7,9 @@ import java.util.UUID;
 import models.UserRepositoryTopics;
 import play.mvc.Http;
 
+/**
+ * Handles session related activities across multiples browser instances
+ */
 public class SessionHelper {
 	private static final Map<String, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
 	private static final String SESSION_KEY = "sessionKey";
@@ -57,7 +60,10 @@ public class SessionHelper {
 				? searchSessionMap.get(sessionValue)
 				: new LinkedHashMap<>();
 		if (searchTerm != null && searchResults != null) {
+			Map<String, List<UserRepositoryTopics>> reverseMap = new LinkedHashMap<>(phraseList);
+			phraseList.clear();
 			phraseList.put(searchTerm, searchResults);
+			phraseList.putAll(reverseMap);
 			searchSessionMap.put(sessionValue, phraseList);
 		}
 		if(searchSessionMap.containsKey(sessionValue))

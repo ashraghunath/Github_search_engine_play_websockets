@@ -34,6 +34,9 @@ import static org.mockito.Mockito.*;
 import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.*;
 
+/**
+ * Test class for GithubController using mockito
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class GithubControllerTest extends WithApplication {
 
@@ -81,8 +84,9 @@ public class GithubControllerTest extends WithApplication {
     }
 
     /** mock object for testing getRepositoryDetailsTest
-     * @author Ashwin Raghunath 40192120
+
      * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
+     * @author Ashwin Raghunath 40192120
      */
     private CompletionStage<Object> repositoryDetailsObject(){
         return CompletableFuture.supplyAsync( () -> {
@@ -116,8 +120,9 @@ public class GithubControllerTest extends WithApplication {
     }
     
     /** mock object for testing getRepositoryIssuesTest
-     * @author Anushka Shetty 40192371
+     *
      * @return CompletionStage<IssueWordStatistics> represents the async response containing the process stage of IssueWordStatistics object
+     * @author Anushka Shetty 40192371
      */
     
     private CompletionStage<IssueWordStatistics> issueStatistics(){
@@ -152,8 +157,9 @@ public class GithubControllerTest extends WithApplication {
 
 
     /** mock object for testing getRepositoryDetailsTest
-     * @author Sourav Uttam Sinha 40175660
+
      * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
+     * @author Sourav Uttam Sinha 40175660
      */
     private CompletionStage<Object> userDetailsObject(){
         return CompletableFuture.supplyAsync( () -> {
@@ -192,8 +198,8 @@ public class GithubControllerTest extends WithApplication {
     /**
      *
      *  mock object for testing getReposByTopicsTest
-     * @author Trusha Patel
-     * @return CompletionStage<Object> represents the async response containing the process stage of SearchedRepository
+     * @return CompletionStage<List<UserRepositoryTopics> represents the async response containing the process stage of UserRepositoryTopic's List
+     * @author Trusha Patel 40192614
      */
     private CompletionStage<List<UserRepositoryTopics>> searchedRepositoriesObject(){
         return CompletableFuture.supplyAsync(() -> {

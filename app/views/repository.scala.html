@@ -13,7 +13,7 @@
             @if(repositoryDetails.getIssues().size()>0) {
             <li><a href="/getRepositoryIssues/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Issues Statistics </a></li>
             }
-            <li><a href="/getCommits/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Commits Statistics</a></li>
+            <li><a href="/getCommitStats/@repositoryDetails.getRepository().getOwner().getLogin()/@repositoryDetails.getRepository().getName()"><span class="glyphicon glyphicon-stats"></span> Commits Statistics</a></li>
         </ul>
     </div>
 </nav>
@@ -38,7 +38,7 @@
     <dd class="col-sm-9"><h4>@repositoryDetails.getRepository().getUpdatedAt()</h4></dd>
 
     <dt class="col-sm-3"><h4>Issues</h4></dt>
-    <dd class="col-sm-9"><h4>@repositoryDetails.getIssues().size()</h4></dd>
+    <dd class="col-sm-9"><h4>@repositoryDetails.getRepository().getOpenIssues()</h4></dd>
 
     </dd>
 </dl>
