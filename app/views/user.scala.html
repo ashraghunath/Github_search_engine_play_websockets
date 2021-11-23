@@ -28,7 +28,9 @@
     </thead>
     <tbody>
     @for(repository <- userDetails.getRepository()) {
-    <tr><td>@repository.getName()</td><td>@repository.getCreatedAt()</td><td><a href="@repository.getHtmlUrl()">@repository.getHtmlUrl()</a></td></tr>
+    <tr><td><a href="/getRepositoryDetails/@repository.getOwner().getLogin()/@repository.getName()">@repository.getName()</a></td>
+      <td>@repository.getCreatedAt()</td>
+      <td><a href="@repository.getHtmlUrl()">@repository.getHtmlUrl()</a></td></tr>
     }
     </tbody>
   </table>
