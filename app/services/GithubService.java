@@ -17,13 +17,10 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import java.util.stream.Stream;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 
 /**
@@ -407,7 +404,7 @@ public class GithubService {
 				e.printStackTrace();
 			}
 			JSONObject jsonResult = new JSONObject(result);
-			System.out.println(jsonResult);
+//			System.out.println("\n\n\n\n\n\t\tRESULT\n\n" + jsonResult);
 
 			Commits commits = new Commits();
 			setCommitsData(commits, jsonResult);

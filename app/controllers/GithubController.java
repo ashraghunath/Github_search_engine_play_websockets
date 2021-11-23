@@ -29,30 +29,31 @@ public class GithubController {
 		this.formFactory = formFactory;
 		this.githubService = githubService;
 		this.sessionHelper = sessionHelper;
-		this.cache=cache;
+		this.cache = cache;
 	}
-	
+
 	/**
 	 * Returns Result View for the Search page along with the session
-	 * 
-	 * @author Anushka Shetty 40192371
+	 *
 	 * @param HTTP request object
 	 * @return Result View for the search page
+	 * @author Anushka Shetty 40192371
 	 */
-	
+
 	public Result index(Http.Request request) {
-		
-		if(sessionHelper.checkSessionExist(request))
-		return ok(views.html.index.render(sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
+
+		if (sessionHelper.checkSessionExist(request))
+			return ok(views.html.index.render(sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
 		else
-	    return ok(views.html.index.render(null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
+			return ok(views.html.index.render(null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
 	}
 
 	/**
 	 * Returns Result View for the Search page after search click
-	 * @author Anmol malhotra 40201452
+	 *
 	 * @param request object
 	 * @return Result View for the search page after click
+	 * @author Anmol malhotra 40201452
 	 */
 	public CompletionStage<Result> search(Http.Request request) {
 		System.out.println(request);
@@ -65,30 +66,30 @@ public class GithubController {
 
 	/**
 	 * Returns the Repository details for the provided username and repository name
-	 * 
-	 * @author Ashwin Raghunath 40192120
+	 *
 	 * @param userName       the user who owns the repository.
 	 * @param repositoryName the name of the repository to be searched for.
 	 * @return CompletionStage<Result> represents the async response containing the
-	 *         process stage of Result object for the repository details
+	 * process stage of Result object for the repository details
+	 * @author Ashwin Raghunath 40192120
 	 */
 	public CompletionStage<Result> getRepositoryDetails(String userName, String repositoryName) {
 
 		CompletionStage<Result> results = cache
-				.getOrElseUpdate((userName +"."+repositoryName),
+				.getOrElseUpdate((userName + "." + repositoryName),
 						() -> githubService.getRepositoryDetails(userName, repositoryName)
-				.thenApplyAsync(repository -> ok(views.html.repository.render(repository))));
+								.thenApplyAsync(repository -> ok(views.html.repository.render(repository))));
 		return results;
 	}
 
 	/**
 	 * Returns the Repository Issues for the provided username and repository name
-	 * 
-	 * @author Anushka Shetty 401923
+	 *
 	 * @param userName       the user who owns the repository.
 	 * @param repositoryName the name of the repository to be searched for.
 	 * @return CompletionStage<Result> represents the async response containing the
-	 *         process stage of Result object for the issue details
+	 * process stage of Result object for the issue details
+	 * @author Anushka Shetty 401923
 	 */
 	public CompletionStage<Result> getIssues(String userName, String repositoryName) {
 		CompletionStage<Result> resultCompletionStage = githubService.getAllIssues(userName, repositoryName)
@@ -97,24 +98,28 @@ public class GithubController {
 		return resultCompletionStage;
 	}
 
-	/** Returns the Repositories that contains the given topic
-	 * @author Trusha Patel
+	/**
+	 * Returns the Repositories that contains the given topic
+	 *
 	 * @param topic_name of the repository
 	 * @return CompletionStage<Result> represents the async response containing the process stage of Result
-	 * 			object for the repository details matching the topic
+	 * object for the repository details matching the topic
+	 * @author Trusha Patel
 	 */
 
 	public CompletionStage<Result> getReposByTopics(String topic_name) {
 		CompletionStage<Result> results = githubService.getReposByTopics(topic_name)
-								.thenApply(repository -> ok(views.html.topics.render(repository)));
+				.thenApply(repository -> ok(views.html.topics.render(repository)));
 		return results;
 
 	}
 
-	/** Returns the User Details for the provided user
-	 * @author Sourav Uttam Sinha 40175660
+	/**
+	 * Returns the User Details for the provided user
+	 *
 	 * @param userName the user who owns the repository.
 	 * @return CompletionStage<Result> represents the async response containing the process stage of Result object for the user details
+	 * @author Sourav Uttam Sinha 40175660
 	 */
 
 	public CompletionStage<Result> getUserDetails(String userName) {
@@ -128,14 +133,15 @@ public class GithubController {
 
 	/**
 	 * Returns the repository commits' details for the given repository
-	 * @param userName owner of the repository
-	 * @param repositoryName name of the respository
+	 *
+	 * @param userName       owner of the repository
+	 * @param repositoryName name of the repository
 	 * @return CompletionStage<Result> represents the async response containing the process stage of Result object for the commits
 	 */
 
 	public CompletionStage<Result> getRepositoryCommits(String userName, String repositoryName) {
 		return githubService.getCommitsForRepository(userName, repositoryName)
 				.thenApplyAsync(commits -> ok(views.html.commits.render(commits)));
-	}
 
+	}
 }
