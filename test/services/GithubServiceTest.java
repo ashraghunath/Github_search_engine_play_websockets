@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -232,7 +231,6 @@ public class GithubServiceTest extends WithApplication {
                 "]" +
                 "}";
         InputStream stream = new ByteArrayInputStream(mockTopics.getBytes(StandardCharsets.UTF_8));
-        System.out.println(stream);
         return stream;
     }
 
@@ -259,7 +257,7 @@ public class GithubServiceTest extends WithApplication {
     /**
      * Mock object for testing search
      * @author Ashwin Raghunath 40192120
-     * @return List<SearchRepository>
+     * @return mock list
      */
     public List<SearchRepository> searchRepositoryList()
     {

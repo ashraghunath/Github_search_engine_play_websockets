@@ -30,7 +30,7 @@ public class SessionHelper {
 
 	/**
 	 * @author Anushka Shetty 40192371
-	 * @param HTTP Request object
+	 * @param request object
 	 * @return boolean representing whether there is an ongoing session or not
 	 */
 	public boolean checkSessionExist(Http.Request request) {
@@ -39,7 +39,7 @@ public class SessionHelper {
 
 	/**
 	 * @author Anushka Shetty 40192371
-	 * @param HTTP Request object
+	 * @param request object
 	 * @return String containing value of the sessionKey
 	 */
 	public String getSessionValue(Http.Request request) {
@@ -48,8 +48,8 @@ public class SessionHelper {
 
 	/**
 	 * @author Anushka Shetty 40192371
-	 * @param HTTP Request object, searchTerm String, searchResults List
-	 * @return Map<searchTerm,List<UserRepositoryTopics> containing key,value pair
+	 * @param request object, searchTerm String, searchResults List
+	 * @return result containing key,value pair
 	 *         of the searchTerm against the searchResults for the current session
 	 */
 	public Map<String, List<UserRepositoryTopics>> getSearchResultsForCurrentSession(Http.Request request,

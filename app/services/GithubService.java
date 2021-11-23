@@ -60,7 +60,7 @@ public class GithubService {
 	 * @author Ashwin Raghunath 40192120
 	 * @param userName       the user who owns the repository.
 	 * @param repositoryName the name of the repository to be searched for.
-	 * @return CompletionStage<RepositoryDetails> represents the async response
+	 * @return represents the async response
 	 *         containing the process stage of RepositoryDetails object
 	 */
 	public CompletionStage<RepositoryDetails> getRepositoryDetails(String userName, String repositoryName) {
@@ -91,7 +91,7 @@ public class GithubService {
 	 * @author Anushka Shetty 40192371
 	 * @param userName       the user who owns the repository.
 	 * @param repositoryName the name of the repository to be searched for.
-	 * @return CompletionStage<IssueWordStatistics> represents the async response
+	 * @return represents the async response
 	 *         containing the process stage of IssueWordStatistics object
 	 */
 
@@ -118,7 +118,7 @@ public class GithubService {
 	 * @author Anushka Shetty 40192371
 	 * @param issues List of all the issues for the given username and repository
 	 *              name
-	 * @return CompletableFuture<IssueWordStatistics> represents the async response
+	 * @return represents the async response
 	 *         containing the process stage of IssueWordStatistics object
 	 */
 	public CompletableFuture<IssueWordStatistics> getWordLevelStatistics(final List<Issue> issues) {
@@ -156,7 +156,7 @@ public class GithubService {
 	 * Returns the User details for the provided username
 	 *
 	 * @param userName the user who owns the repository.
-	 * @return CompletionStage<RepositoryDetails> represents the async response
+	 * @return represents the async response
 	 *         containing the process stage of RepositoryDetails object
 	 */
 
@@ -216,7 +216,7 @@ public class GithubService {
 	/**
 	 * @author Trusha Patel
 	 * @param topic_name The query topic
-	 * @return CompletionStage<SearchedRepositoryDetails> represents the async
+	 * @return represents the async
 	 *         response containing the process stage of SearchedRepositoryDetails
 	 *         object
 	 */
@@ -404,7 +404,6 @@ public class GithubService {
 				e.printStackTrace();
 			}
 			JSONObject jsonResult = new JSONObject(result);
-//			System.out.println("\n\n\n\n\n\t\tRESULT\n\n" + jsonResult);
 
 			Commits commits = new Commits();
 			setCommitsData(commits, jsonResult);
