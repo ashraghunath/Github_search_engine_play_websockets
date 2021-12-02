@@ -25,7 +25,6 @@ libraryDependencies ++= Seq(
 javacOptions ++= Seq(
   "-Xlint:unchecked",
   "-Xlint:deprecation",
-  "-Werror"
 )
 
 Test / jacocoExcludes := Seq(

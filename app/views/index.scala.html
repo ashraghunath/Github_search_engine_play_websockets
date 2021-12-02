@@ -1,12 +1,14 @@
-@(searchMap : Map[String,List[UserRepositoryTopics]])
+@(request: play.mvc.Http.Request, searchMap : Map[String,List[UserRepositoryTopics]])
 
-  @main("Welcome to Play") {
+  @main2(request, "Welcome to Play") {
 <div class=".container-fluid">
-        <div class="jumbotron jumbotron-fluid">
-            <h1 id="mainBanner" >Gitterific</h1>
+        <div id="jumbotron" class="jumbotron jumbotron-fluid">
+            <h1 id="mainBanner" style="width: 100px;
+           margin-left: 570px;
+           margin-right: auto;" >Gitterific</h1>
         </div>
 </div>
-<div class="container">
+<div id="search-page" class="container">
     <div>
     <form action="@routes.GithubController.search()" method="post">
       <input type="text" class="input-lg" name="phrase" size="105">
@@ -27,7 +29,7 @@
             </thead>
             <tbody>
             @for( userRepositoryTopics <- userRepositoryTopicsList ) {
-                <tr><td><a href="/getUserDetails/@userRepositoryTopics.getOwner()">@userRepositoryTopics.getOwner()</a></td><td><a href="/getRepositoryDetails/@userRepositoryTopics.getOwner()/@userRepositoryTopics.getName()">@userRepositoryTopics.getName()</a></td>
+                <tr><td><a href="/getUserDetails/@userRepositoryTopics.getOwner()">@userRepositoryTopics.getOwner()</a></td><td><a href="/getRepositoryProfile/@userRepositoryTopics.getOwner()/@userRepositoryTopics.getName()" class="repository-details" username="@userRepositoryTopics.getOwner()">@userRepositoryTopics.getName()</a></td>
                 <td>
                     @for(topic <- userRepositoryTopics.getTopics()) {
                     <a href="/getReposByTopics/@topic">@topic</a>
@@ -39,6 +41,10 @@
         </table>
         }
     }
+</div>
+<div class="container">
+    <div id="repository-details">
+    </div>
 </div>
 }
 

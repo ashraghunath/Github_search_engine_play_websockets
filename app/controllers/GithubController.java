@@ -1,18 +1,28 @@
 package controllers;
 
 import Helper.SessionHelper;
+import actors.SupervisorActor;
+import actors.TimeActor;
+import actors.UserActor;
 import play.cache.AsyncCacheApi;
 import play.data.DynamicForm;
 import play.data.FormFactory;
+import play.libs.concurrent.HttpExecutionContext;
+import play.libs.streams.ActorFlow;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.WebSocket;
+import router.Routes;
 import services.GithubService;
 
-import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
 import static play.mvc.Results.ok;
+import akka.actor.ActorSystem;
+import akka.stream.Materializer;
+import views.html.actor;
 
+import javax.inject.Inject;
 
 /**
  * Handles all incoming http requests and maps it to a particular method
@@ -23,13 +33,24 @@ public class GithubController {
 	private final GithubService githubService;
 	private final SessionHelper sessionHelper;
 	private AsyncCacheApi cache;
+	private final AssetsFinder assetsFinder;
+	private HttpExecutionContext httpExecutionContext;
+	@Inject
+	private Materializer materializer;
+	@Inject
+	private ActorSystem actorSystem;
 
 	@Inject
-	public GithubController(FormFactory formFactory, GithubService githubService, SessionHelper sessionHelper, AsyncCacheApi cache) {
+	public GithubController(HttpExecutionContext httpExecutionContext, AssetsFinder assetsFinder, FormFactory formFactory, GithubService githubService, SessionHelper sessionHelper, AsyncCacheApi cache, Materializer materializer, ActorSystem actorSystem) {
 		this.formFactory = formFactory;
 		this.githubService = githubService;
 		this.sessionHelper = sessionHelper;
 		this.cache=cache;
+		this.actorSystem=actorSystem;
+		this.materializer=materializer;
+		this.assetsFinder=assetsFinder;
+		this.httpExecutionContext=httpExecutionContext;
+		actorSystem.actorOf(TimeActor.props(), "timeActor");
 	}
 	
 	/**
@@ -43,9 +64,17 @@ public class GithubController {
 	public Result index(Http.Request request) {
 		
 		if(sessionHelper.checkSessionExist(request))
-		return ok(views.html.index.render(sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
+		return ok(views.html.index.render(request, sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
 		else
-	    return ok(views.html.index.render(null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
+	    return ok(views.html.index.render(request,null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
+	}
+
+	public Result actor(Http.Request request) {
+		return ok(actor.render(request));
+	}
+
+	public WebSocket ws() {
+		return WebSocket.Json.accept(request -> ActorFlow.actorRef(out -> SupervisorActor.props(out, githubService, cache), actorSystem, materializer));
 	}
 
 	/**
@@ -59,7 +88,7 @@ public class GithubController {
 		DynamicForm form = formFactory.form().bindFromRequest(request);
 		String phrase = form.get("phrase");
 		CompletionStage<Result> resultCompletionStage = githubService
-				.searchResults(request, phrase).thenApply(map -> ok(views.html.index.render(map)));
+				.searchResults(request, phrase).thenApply(map -> ok(views.html.index.render(request,map)));
 		return resultCompletionStage;
 	}
 
@@ -80,6 +109,17 @@ public class GithubController {
 				.thenApplyAsync(repository -> ok(views.html.repository.render(repository))));
 		return results;
 	}
+
+	public CompletionStage<Result> getRepositoryProfile(String username, String repositoryName, Http.Request request){
+		return githubService.getRepositoryDetailsJsonNode(username, repositoryName).thenApplyAsync(
+				repositoryData -> ok(views.html.repository2.render(request, username,
+						repositoryName,
+						repositoryData.get("repositoryProfile"),
+						repositoryData.get("issueList"),
+						assetsFinder)),
+				httpExecutionContext.current());
+	}
+
 
 	/**
 	 * Returns the Repository Issues for the provided username and repository name

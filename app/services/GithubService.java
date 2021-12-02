@@ -1,6 +1,11 @@
 package services;
 
 import Helper.SessionHelper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
 import com.typesafe.config.Config;
 import models.*;
 import org.eclipse.egit.github.core.*;
@@ -82,6 +87,35 @@ public class GithubService {
 			return repositoryDetails;
 		});
 
+	}
+
+	public CompletionStage<JsonNode> getRepositoryDetailsJsonNode(String username, String repositoryName) {
+		return CompletableFuture.supplyAsync(() -> {
+
+			Repository repository = null;
+			Map<String, String> params = new HashMap<String, String>();
+			params.put(IssueService.FILTER_STATE, "all");
+			ObjectNode repositoryData = null;
+			try {
+				repository = repositoryService.getRepository(username, repositoryName);
+				List<Issue> issues = issueService.getIssues(username, repositoryName, params).stream()
+						.sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
+						.collect(Collectors.toList());
+				List<String> list = new ArrayList<>();
+				ObjectMapper mapper = new ObjectMapper();
+				repositoryData = mapper.createObjectNode();
+				ArrayNode arrayNode = mapper.createArrayNode();
+				list.forEach(arrayNode::add);
+
+				JsonNode repositoryJsonNode = mapper.convertValue(repository, JsonNode.class);
+				JsonNode issueJsonNode = mapper.convertValue(issues, JsonNode.class);
+				repositoryData.set("repositoryProfile", repositoryJsonNode);
+				repositoryData.set("issueList", issueJsonNode);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return repositoryData;
+		});
 	}
 
 	/**
@@ -216,7 +250,7 @@ public class GithubService {
 	/**
 	 * @author Trusha Patel
 	 * @param topic_name The query topic
-	 * @return represents the async
+	 * @return  represents the async
 	 *         response containing the process stage of SearchedRepositoryDetails
 	 *         object
 	 */
