@@ -5,8 +5,9 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.fasterxml.jackson.databind.JsonNode;
 import play.cache.AsyncCacheApi;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import services.GithubService;
 
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class SupervisorActor extends AbstractActor {
     final Map<String, ActorRef> queryToSearchActor = new HashMap<String, ActorRef>();
     private ActorRef userProfileActor = null;
     private ActorRef repositoryProfileActor = null;
-    private ActorRef issueStatActor = null;
+    private ActorRef issueStatisticsActor = null;
 
     public SupervisorActor(final ActorRef wsOut, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         this.wsOut =  wsOut;
@@ -65,6 +66,14 @@ public class SupervisorActor extends AbstractActor {
                 repositoryProfileActor = getContext().actorOf(RepositoryDetailsActor.props(self(), githubService, asyncCacheApi));
             }
             repositoryProfileActor.tell(new Messages.GetRepositoryDetailsActor(username, repositoryName), getSelf());
+        }else if(receivedJson.has("issueStatisticsPage")) {
+            String repositoryName = receivedJson.get("repositoryName").asText();
+            String userName = receivedJson.get("userName").asText();
+            if(issueStatisticsActor == null) {
+                log.info("Creating a issue statistics actor.");
+                issueStatisticsActor = getContext().actorOf(IssueStatisticsActor.props(self(), githubService, asyncCacheApi));
+            }
+            issueStatisticsActor.tell(new Messages.GetIssueStatisticsActor(userName, repositoryName), getSelf());
         }
     }
 }

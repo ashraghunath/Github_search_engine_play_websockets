@@ -187,6 +187,35 @@ public class GithubService {
 	}
 
 	/**
+	 * Returns the Json containing issueWordLevelStats
+	 *
+	 * @author Anushka Shetty 40192371
+	 * @param userName       the user who owns the repository.
+	 * @param repositoryName the name of the repository to be searched for.
+	 * @return represents the async response
+	 *         containing the process stage of IssueWordStatistics Json object
+	 */
+	public CompletionStage<JsonNode> getIssueStatisticsJsonNode(String userName, String repositoryName) {
+		return CompletableFuture.supplyAsync(() -> {
+
+			CompletionStage<IssueWordStatistics> issueWordStatistics = null;
+			Map<String, String> params = new HashMap<String, String>();
+			params.put(IssueService.FILTER_STATE, "all");
+			ObjectNode issueStatData = null;
+			try {
+				issueWordStatistics = getAllIssues(userName, repositoryName);
+				ObjectMapper mapper = new ObjectMapper();
+				issueStatData = mapper.createObjectNode();
+				JsonNode issueJsonNode = mapper.convertValue(issueWordStatistics, JsonNode.class);
+				issueStatData.set("issueWordLevelStat", issueJsonNode);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return issueStatData;
+		});
+	}
+
+	/**
 	 * Returns the User details for the provided username
 	 *
 	 * @param userName the user who owns the repository.

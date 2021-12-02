@@ -9,10 +9,19 @@ $ ->
         $("#search-page").hide()
         ComposeRepositoryDetailsHtml(message)
         $("#repository-details").show()
+      when "issueStatisticsPage"
+        $("#repository-details").hide()
+        ComposeIssueStatisticsPageHtml(message)
+        $("#issue-statistics").show()
 
   $("#search-page").on "click", "a.repository-details", (event) ->
     event.preventDefault()
     ws.send(JSON.stringify({repositoryDetails: $(this).text(), username: $(this).attr("username")}))
+    return
+ 
+   $("#repository-details").on "click", "a.issue-stat-link", (event) ->
+    event.preventDefault()
+    ws.send(JSON.stringify({issueStatisticsPage: "",repositoryName: $(this).attr("repositoryName"), userName: $(this).attr("username")}))
     return
 
 ComposeRepositoryDetailsHtml = (message) ->
@@ -35,7 +44,9 @@ ComposeRepositoryDetailsHtml = (message) ->
       dlList.append(dt).append(dd)
       $('#repository-details').append(dlList)
 
-  $('#repository-details').append "<br><b><h3>Issues of repository :  "+repositoryName+"</h3></b>"
+# Temporary addition for testing, will be replaced as part of Task B
+  $('#repository-details').append("<br><b><h3>Issues of repository :  "+repositoryName+"</h3></b><a class='issue-stat-link' userName = '"+username+"' repositoryName='"+repositoryName+"'>View Issue Statistics")
+
   if message.issueList.length > 0
       issuesTable = $("<table>").prop("class", "table").prop("border","1")
       issuesTable.append "<thead><tr><th>Sl no.</th><th>Issues</th></thead><tbody>"
@@ -71,4 +82,18 @@ getRepositoryDetails = (objectValue, repositoryName, dlList ) ->
                    dd = $("<dd>").prop("class", "col-sm-9").text(value)
                    dlList.append(dt).append(dd)
                    $('#repository-details').append(dlList)
+      
+ComposeIssueStatisticsPageHtml = (message) ->
+  $("#mainBanner").empty()
+  $("#mainBanner").removeAttr("style")
+  $("#mainBanner").append("<h1>").text("Issue Word Level Statistics")
+  $("#mainBanner").attr("style","margin-left: 400px;")
+  $("#issue-statistics").empty()
 
+  repositoryName = message.repositoryProfile.name
+  username = message.repositoryProfile.owner.login
+  $('#issue-statistics').append("Issue Word Level Statistics ")
+  $('#issue-statistics').append(repositoryName+" "+username)
+
+  
+       
