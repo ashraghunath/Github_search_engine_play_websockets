@@ -35,7 +35,7 @@
                 <tr><td><a href="/getUserDetails/@userRepositoryTopics.getOwner()">@userRepositoryTopics.getOwner()</a></td><td><a href="/getRepositoryProfile/@userRepositoryTopics.getOwner()/@userRepositoryTopics.getName()" class="repository-details" username="@userRepositoryTopics.getOwner()">@userRepositoryTopics.getName()</a></td>
                 <td>
                     @for(topic <- userRepositoryTopics.getTopics()) {
-                    <a href="/getReposByTopics/@topic">@topic</a>
+                    <a href="/getReposByTopics/@topic" class = "topic-link">@topic</a>
                     }
                 </td>
                 </tr>
@@ -49,6 +49,8 @@
     <div id="repository-details">
     </div>
     <div id="search-page-result">
+    </div>
+    <div id="topic-page-result">
     </div>
 </div>
 }

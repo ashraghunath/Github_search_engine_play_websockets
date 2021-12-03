@@ -1,0 +1,18 @@
+@import com.fasterxml.jackson.databind.JsonNode
+@import java.lang.String
+@(topicName: String, topicDetails: JsonNode)(implicit assetsFinder: AssetsFinder)
+
+@main("Topic Profile") {
+<section id="top">
+    <div class="wrapper">
+        <h1>Gitterific Topic 2</h1>
+    </div>
+</section>
+<div style="margin-left: 5%; margin-right: 5%; margin-bottom: 1%; margin-top: 1%;">
+    <div id="topic-info" style="padding: 10px 0px;">
+        <h3>Topics Data for: <b>@topicName</b></h3>
+        @topicDetails
+    </div>
+
+</div>
+}
