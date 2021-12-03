@@ -2,6 +2,10 @@ package models;
 
 import java.util.List;
 
+/**
+ * Class to represent the rep
+ */
+
 public class SearchResults {
     private String keyword;
     private List<UserRepositoryTopics> repos;

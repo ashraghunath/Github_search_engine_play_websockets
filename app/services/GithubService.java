@@ -303,10 +303,6 @@ public class GithubService {
 					userRepositoryTopicsList.add(userRepositoryTopics);
 					results.setKeyword(topic_name);
 					results.setRepos(userRepositoryTopicsList);
-
-
-					//repositoryData.put("responseType", "topicsDetails");
-
 				}
 
 			} catch (IOException e) {
@@ -314,10 +310,9 @@ public class GithubService {
 			}
 			JsonNode repositoryJsonNode = mapper.convertValue(results, JsonNode.class);
 			repositoryData.set("searchProfile", repositoryJsonNode);
-			System.out.println("trusha json service:" + repositoryData);
+			//System.out.println("trusha json service:" + repositoryData);
 
 			return repositoryData;
-			//return results;
 
 		});
 

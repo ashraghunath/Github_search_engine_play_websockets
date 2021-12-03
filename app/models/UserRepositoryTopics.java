@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Class to represent the returned repositories that matched the searched keyword or topic
+ * @author Ashwin Raghunath, Trusha Patel
+ */
+
 public class UserRepositoryTopics extends SearchRepository {
 
     List<String> topics;
@@ -27,16 +32,12 @@ public class UserRepositoryTopics extends SearchRepository {
         this.topics = topics;
     }
 
-
-
     public Date getPushedAt() {
         return this.pushedAt;
     }
 
     public void setPushedAt(Date pushedAt) {
-        System.out.println("Child pushed at");
         this.pushedAt = pushedAt;
-        System.out.println(this.pushedAt);
     }
     public void setDescription(String description) {
         this.description = description;
