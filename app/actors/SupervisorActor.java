@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.Actor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
@@ -22,8 +23,9 @@ public class SupervisorActor extends AbstractActor {
 
     final Map<String, ActorRef> queryToSearchActor = new HashMap<String, ActorRef>();
     private ActorRef userProfileActor = null;
-    private ActorRef repositoryProfileActor = null;
+    private ActorRef repositoryDetailsActor = null;
     private ActorRef issueStatActor = null;
+    private ActorRef searchPageActor = null;
 
     public SupervisorActor(final ActorRef wsOut, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         this.wsOut =  wsOut;
@@ -47,7 +49,8 @@ public class SupervisorActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(JsonNode.class, this::processRequest)
-                .match(Messages.RepositoryDetails.class, repositoryProfileInfo -> wsOut.tell(repositoryProfileInfo.repositoryDetails, self()))
+                .match(Messages.RepositoryDetails.class, repositoryDetails -> wsOut.tell(repositoryDetails.repositoryDetails, self()))
+                .match(Messages.SearchResult.class, searchResult -> wsOut.tell(searchResult.searchResult, self()))
                 .matchAny(other -> log.error("Received unknown message type: " + other.getClass()))
                 .build();
     }
@@ -55,16 +58,24 @@ public class SupervisorActor extends AbstractActor {
 
     private void processRequest(JsonNode receivedJson) {
     	log.info(receivedJson.asText());
-        if(receivedJson.has("search_query")) {
+        if(receivedJson.has("searchPage")) {
+
+            if(searchPageActor==null)
+            {
+                log.info("Creating a search page actor.");
+                searchPageActor = getContext().actorOf(SearchPageActor.props(self(), githubService, asyncCacheApi));
+            }
+            String phrase = receivedJson.get("searchPage").asText();
+            searchPageActor.tell(new Messages.SearchPageActor(phrase), getSelf());
 
         } else if(receivedJson.has("repositoryDetails")) {
             String repositoryName = receivedJson.get("repositoryDetails").asText();
             String username = receivedJson.get("username").asText();
-            if(repositoryProfileActor == null) {
+            if(repositoryDetailsActor == null) {
                 log.info("Creating a repository profile actor.");
-                repositoryProfileActor = getContext().actorOf(RepositoryDetailsActor.props(self(), githubService, asyncCacheApi));
+                repositoryDetailsActor = getContext().actorOf(RepositoryDetailsActor.props(self(), githubService, asyncCacheApi));
             }
-            repositoryProfileActor.tell(new Messages.GetRepositoryDetailsActor(username, repositoryName), getSelf());
+            repositoryDetailsActor.tell(new Messages.GetRepositoryDetailsActor(username, repositoryName), getSelf());
         }
     }
 }

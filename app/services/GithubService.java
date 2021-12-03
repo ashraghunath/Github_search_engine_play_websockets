@@ -43,7 +43,7 @@ public class GithubService {
 	private Config config;
 	private CommitService commitService;
 	private CommitStats commitStats;
-	Map<Optional<String>, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
+	Map<String, List<UserRepositoryTopics>> searchSessionMap = new LinkedHashMap<>();
 
 	@Inject
 	public GithubService(Config config) {
@@ -75,7 +75,9 @@ public class GithubService {
 			Map<String, String> params = new HashMap<String, String>();
 			params.put(IssueService.FILTER_STATE, "all");
 			try {
+				System.out.println("Calling Github API to fetch repository details");
 				repository = repositoryService.getRepository(userName, repositoryName);
+				System.out.println("API call completed");
 				List<Issue> issues = issueService.getIssues(userName, repositoryName, params).stream()
 						.sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
 						.collect(Collectors.toList());
@@ -244,6 +246,29 @@ public class GithubService {
 					phrase, userRepositoryTopicsList);
 
 			return searchMap;
+		});
+	}
+
+	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResultsUsingActors(String phrase) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				searchRepositoryList = repositoryService.searchRepositories(phrase, 0).stream()
+						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
+						.collect(Collectors.toList());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
+			for (SearchRepository searchRepository : searchRepositoryList) {
+				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
+						searchRepository.getName());
+				userRepositoryTopics.setTopics(getTopics(searchRepository));
+
+				userRepositoryTopicsList.add(userRepositoryTopics);
+			}
+
+			searchSessionMap.put(phrase,userRepositoryTopicsList);
+			return searchSessionMap;
 		});
 	}
 

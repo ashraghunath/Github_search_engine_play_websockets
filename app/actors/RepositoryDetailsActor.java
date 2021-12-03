@@ -39,16 +39,15 @@ public class RepositoryDetailsActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Messages.GetRepositoryDetailsActor.class, repositoryProfileRequest -> {
-                    onGetRepositoryProfile(repositoryProfileRequest).thenAcceptAsync(this::processRepositoryProfileResult);
+                .match(Messages.GetRepositoryDetailsActor.class, repositoryDetailsRequest -> {
+                    getRepositoryDetails(repositoryDetailsRequest).thenAcceptAsync(this::processRepositoryDetails);
                 })
                 .build();
     }
 
-    private CompletionStage<JsonNode> onGetRepositoryProfile(Messages.GetRepositoryDetailsActor repositoryProfileRequest) throws Exception {
-
-        return asyncCacheApi.getOrElseUpdate(repositoryProfileRequest.username + "." + repositoryProfileRequest.repositoryName,
-                        () -> githubService.getRepositoryDetails(repositoryProfileRequest.username, repositoryProfileRequest.repositoryName))
+    private CompletionStage<JsonNode> getRepositoryDetails(Messages.GetRepositoryDetailsActor repositoryDetailRequest) throws Exception {
+        return asyncCacheApi.getOrElseUpdate(repositoryDetailRequest.username + "." + repositoryDetailRequest.repositoryName,
+                        () -> githubService.getRepositoryDetails(repositoryDetailRequest.username, repositoryDetailRequest.repositoryName))
                 .thenApplyAsync(
                         repositoryDetails -> {
                             ObjectMapper mapper = new ObjectMapper();
@@ -62,14 +61,14 @@ public class RepositoryDetailsActor extends AbstractActor {
                             ArrayNode arrayNode = mapper.createArrayNode();
                             issueNames.forEach(arrayNode::add);
                             repositoryData.put("responseType", "repositoryDetails");
-                            repositoryData.set("repositoryProfile", repositoryJsonNode);
+                            repositoryData.set("repositoryDetails", repositoryJsonNode);
                             repositoryData.set("issueList", arrayNode);
                             return repositoryData;
                         }
                 );
     }
 
-    private void processRepositoryProfileResult(JsonNode repositoryProfileInfo) {
-        sessionActor.tell(new Messages.RepositoryDetails(repositoryProfileInfo), getSelf());
+    private void processRepositoryDetails(JsonNode repositoryDetails) {
+        sessionActor.tell(new Messages.RepositoryDetails(repositoryDetails), getSelf());
     }
 }

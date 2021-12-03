@@ -17,8 +17,24 @@ public class Messages {
     public static final class RepositoryDetails {
         public final JsonNode repositoryDetails;
 
-        public RepositoryDetails(JsonNode repositoryProfileResult) {
-            this.repositoryDetails = repositoryProfileResult;
+        public RepositoryDetails(JsonNode repositoryDetails) {
+            this.repositoryDetails = repositoryDetails;
+        }
+    }
+
+
+    public static final class SearchPageActor{
+        public final String phrase;
+
+        public SearchPageActor(String phrase) {
+            this.phrase = phrase;
+        }
+    }
+
+    public static final class SearchResult {
+        public final JsonNode searchResult;
+        public SearchResult(JsonNode searchResult) {
+            this.searchResult = searchResult;
         }
     }
 

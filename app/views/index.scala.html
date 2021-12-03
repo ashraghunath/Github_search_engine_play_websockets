@@ -2,17 +2,20 @@
 
   @main2(request, "Welcome to Play") {
 <div class=".container-fluid">
-        <div id="jumbotron" class="jumbotron jumbotron-fluid">
+        <div id="jumbotron" class="jumbotron jumbotron-fluid" style="margin:0px;">
             <h1 id="mainBanner" style="width: 100px;
            margin-left: 570px;
            margin-right: auto;" >Gitterific</h1>
         </div>
+    <nav id="reponavbar" class="navbar navbar-inverse" >
+    </nav>
 </div>
+
 <div id="search-page" class="container">
     <div>
-    <form action="@routes.GithubController.search()" method="post">
-      <input type="text" class="input-lg" name="phrase" size="105">
-      <button class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>  Search</button>
+    <form action="@routes.GithubController.search()" id="searchForm" method="post">
+      <input type="text" class="input-lg" name="phrase" id="phrase" size="105" value="">
+      <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>  Search</button>
     </form>
     </div>
 
@@ -44,6 +47,8 @@
 </div>
 <div class="container">
     <div id="repository-details">
+    </div>
+    <div id="search-page-result">
     </div>
 </div>
 }

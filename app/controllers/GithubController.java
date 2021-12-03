@@ -110,16 +110,6 @@ public class GithubController {
 		return results;
 	}
 
-	public CompletionStage<Result> getRepositoryProfile(String username, String repositoryName, Http.Request request){
-		return githubService.getRepositoryDetailsJsonNode(username, repositoryName).thenApplyAsync(
-				repositoryData -> ok(views.html.repository2.render(request, username,
-						repositoryName,
-						repositoryData.get("repositoryProfile"),
-						repositoryData.get("issueList"),
-						assetsFinder)),
-				httpExecutionContext.current());
-	}
-
 
 	/**
 	 * Returns the Repository Issues for the provided username and repository name
