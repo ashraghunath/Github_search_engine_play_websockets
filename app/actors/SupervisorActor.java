@@ -82,9 +82,8 @@ public class SupervisorActor extends AbstractActor {
         }
         else if(receivedJson.has("topicsDetails")){
             String topic_name = receivedJson.get("topicsDetails").asText();
-            System.out.println("ooooogggg in the supervisor"+ topic_name);
             if(topicsSearchActor == null){
-                System.out.println("A topics actor created");
+                //System.out.println("A topics actor created");
                 topicsSearchActor = getContext().actorOf(TopicsActor.props(self(),githubService,asyncCacheApi));
             }
             topicsSearchActor.tell(new Messages.GetRepositoryfromTopic(topic_name),getSelf());

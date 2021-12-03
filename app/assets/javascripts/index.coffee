@@ -94,19 +94,18 @@ ComposeTopicSearchHtml = (message) ->
     $("#mainBanner").attr("style","margin-left: 450px;")
     $("#topic-page-result").empty()
     topicName = message.searchProfile.searchProfile.keyword
-    $("#topic-page-result").append($("<p>").text("sdadsa"))
     $("#mainBanner").append($("<h3>").text("Repository from topic"+ topicName))
     searchTable = $("<table>").prop("class", "table").prop("border","1")
     searchTable.append "<thead><tr><th>Repository</th><th>User</th><th>Topics</th></thead><tbody>"
     for repository in message.searchProfile.searchProfile.repos
         searchData = $("<tr>")
-        repositoryLink = $("<a>").text(repository.name).attr("class", "repository-details").attr("username",repository.name)
+        repositoryLink = $("<a>").text(repository.name).attr("class", "repository-details").attr("username",repository.owner)
         repository_user = $("<td>").append(repositoryLink).append("</td>")
         searchData.append(repository_user)
         userProfileLink = $("<a>").text(repository.owner).attr("class", "user-details")
         userData  = $("<td>").append(userProfileLink).append("</td>")
         searchData.append(userProfileLink)
-        topicList =$("<p>").text("topics:")
+        topicList =$("<p>").text("")
         for topic in repository.topics
             topicLink = $("<a>").text(topic).attr("href", "/getReposByTopics/"+topic).attr("class","topic-link")
             topicList.append(topicLink)
