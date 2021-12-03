@@ -1,10 +1,10 @@
-@(repositories: SearchResults)
+@(repositories: List[UserRepositoryTopics])
 
 @main("Repository") {
 
 <div class=".container-fluid">
     <div class="jumbotron jumbotron-fluid" style="margin:0px;">
-        <h2 style="margin-left: 450px;">Repositories from the selected topic: @repositories.getKeyword()</h2>
+        <h2 style="margin-left: 450px;">Repositories from the selected topic</h2>
     </div>
 </div>
 
@@ -12,10 +12,10 @@
 
     <table border="1" class="table">
         <thead class="thead-light">
-        <tr><th>Repository</th><th>User</th><th>Topics</th></tr>
+        <tr><th>Repository</th><th>User</th><th>Topics</th>
         </thead>
         <tbody>
-        @for(repo <- repositories.getRepos()) {
+        @for(repo <- repositories) {
         <tr>
             <td><a href="/getRepositoryDetails/@repo.getOwner()/@repo.getName()">@repo.getName()</a></td>
             <td><a href = "/getUserDetails/@repo.getOwner()">@repo.getOwner()</a></td>

@@ -135,13 +135,8 @@ public class GithubController {
 	 */
 
 	public CompletionStage<Result> getReposByTopics(String topic_name) {
-//		CompletionStage<Result> results = githubService.getReposByTopics(topic_name)
-//								.thenApply(repository -> ok(views.html.topics.render(repository)));
-//		return results;
 		CompletionStage<Result> results = githubService.getReposByTopics(topic_name)
-				.thenApplyAsync(repository -> ok(views.html.topics2.render(topic_name,
-								repository.get("searchProfile"),assetsFinder)),
-						httpExecutionContext.current());
+								.thenApply(repository -> ok(views.html.topics.render(repository)));
 		return results;
 
 	}

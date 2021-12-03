@@ -8,21 +8,13 @@ $ ->
       when "repositoryDetails"
         $("#search-page").hide()
         $("#search-page-result").hide()
-        $("#topic-page-result").hide()
         ComposeRepositoryDetailsHtml(message)
         $("#repository-details").show()
       when "searchResults"
         $("#search-page").show()
         ComposeSearchPageHtml(message)
         $("#search-page-result").show()
-        $("#repository-details").hide()
-        $("#topic-page-result").hide()
-      when "topicsDetails"
-        $("#search-page").hide()
-        $("#search-page-result").hide()
-        $("#repository-details").hide()
-        ComposeTopicSearchHtml(message)
-        $("#topic-page-result").show()
+        $("#repository-details").hide
 
   $("#searchForm").submit (event) ->
       event.preventDefault()
@@ -36,18 +28,6 @@ $ ->
         return
 
   $("#search-page-result").on "click", "a.repository-details", (event) ->
-    event.preventDefault()
-    ws.send(JSON.stringify({repositoryDetails: $(this).text(), username: $(this).attr("username")}))
-    return
-  $("#search-page-result").on "click", "a.topic-link", (event) ->
-    event.preventDefault()
-    ws.send(JSON.stringify({topicsDetails: $(this).text()}))
-    return
-  $("#topic-page-result").on "click", "a.topic-link", (event) ->
-    event.preventDefault()
-    ws.send(JSON.stringify({topicsDetails: $(this).text()}))
-    return
-  $("#topic-page-result").on "click", "a.repository-details", (event) ->
     event.preventDefault()
     ws.send(JSON.stringify({repositoryDetails: $(this).text(), username: $(this).attr("username")}))
     return
@@ -86,36 +66,6 @@ getSearchRepoValues = (objectValue, searchData ) ->
                     topicLink =  $("<a>").text(val).attr("class","topic-link")
                     topicsData.append(topicLink).append("</td>")
         searchData.append(owner).append(repository).append(topicsData).append("</tr>")
-
-ComposeTopicSearchHtml = (message) ->
-    $("#mainBanner").empty()
-    $("#mainBanner").removeAttr("style")
-    $("#mainBanner").append($("<h1>").text("Topics Search"))
-    $("#mainBanner").attr("style","margin-left: 450px;")
-    $("#topic-page-result").empty()
-    topicName = message.searchProfile.searchProfile.keyword
-    $("#topic-page-result").append($("<p>").text("sdadsa"))
-    $("#mainBanner").append($("<h3>").text("Repository from topic"+ topicName))
-    searchTable = $("<table>").prop("class", "table").prop("border","1")
-    searchTable.append "<thead><tr><th>Repository</th><th>User</th><th>Topics</th></thead><tbody>"
-    for repository in message.searchProfile.searchProfile.repos
-        searchData = $("<tr>")
-        repositoryLink = $("<a>").text(repository.name).attr("class", "repository-details").attr("username",repository.name)
-        repository_user = $("<td>").append(repositoryLink).append("</td>")
-        searchData.append(repository_user)
-        userProfileLink = $("<a>").text(repository.owner).attr("class", "user-details")
-        userData  = $("<td>").append(userProfileLink).append("</td>")
-        searchData.append(userProfileLink)
-        topicList =$("<p>").text("topics:")
-        for topic in repository.topics
-            topicLink = $("<a>").text(topic).attr("href", "/getReposByTopics/"+topic).attr("class","topic-link")
-            topicList.append(topicLink)
-        topicData = $("<td>").append(topicList).append("</td>")
-        searchData.append(topicData)
-        searchData.append($("</tr>"))
-        searchTable.append(searchData)
-    searchTable.append($("</tbody>"))
-    $("#topic-page-result").append(searchTable)
 
 ComposeRepositoryDetailsHtml = (message) ->
   $("#mainBanner").empty()

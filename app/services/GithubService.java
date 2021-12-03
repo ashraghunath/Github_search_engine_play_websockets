@@ -280,45 +280,26 @@ public class GithubService {
 	 *         object
 	 */
 
-	public CompletionStage<JsonNode> getReposByTopics(String topic_name){
+	public CompletionStage<List<UserRepositoryTopics>> getReposByTopics(String topic_name){
 		return CompletableFuture.supplyAsync(() -> {
-			SearchResults results = new SearchResults();
 			Map<String, String> searchQuery = new HashMap<String, String>();
 			searchQuery.put("topic", topic_name);
 			List<SearchRepository> searchRepositoryList = null;
-			ObjectMapper mapper = new ObjectMapper();
-			ObjectNode repositoryData = mapper.createObjectNode();
 			try {
 				searchRepositoryList = repositoryService.searchRepositories(searchQuery).stream()
 						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
 						.collect(Collectors.toList());
-				List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
-				for (SearchRepository searchRepository : searchRepositoryList)
-				{
-					UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
-							searchRepository.getName());
-					userRepositoryTopics.setTopics(getTopics(searchRepository));
-					userRepositoryTopics.setPushedAt(searchRepository.getPushedAt());
-					userRepositoryTopics.setDescription(searchRepository.getDescription());
-					userRepositoryTopicsList.add(userRepositoryTopics);
-					results.setKeyword(topic_name);
-					results.setRepos(userRepositoryTopicsList);
-
-
-					//repositoryData.put("responseType", "topicsDetails");
-
-				}
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			JsonNode repositoryJsonNode = mapper.convertValue(results, JsonNode.class);
-			repositoryData.set("searchProfile", repositoryJsonNode);
-			System.out.println("trusha json service:" + repositoryData);
-
-			return repositoryData;
-			//return results;
-
+			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
+			for (SearchRepository searchRepository : searchRepositoryList) {
+				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
+						searchRepository.getName());
+				userRepositoryTopics.setTopics(getTopics(searchRepository));
+				userRepositoryTopicsList.add(userRepositoryTopics);
+			}
+			return userRepositoryTopicsList;
 		});
 
 	}
