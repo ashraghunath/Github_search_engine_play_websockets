@@ -50,7 +50,7 @@ public class GithubController {
 		this.materializer=materializer;
 		this.assetsFinder=assetsFinder;
 		this.httpExecutionContext=httpExecutionContext;
-		actorSystem.actorOf(TimeActor.props(), "timeActor");
+//		actorSystem.actorOf(TimeActor.props(), "timeActor");
 	}
 	
 	/**
@@ -62,7 +62,6 @@ public class GithubController {
 	 */
 	
 	public Result index(Http.Request request) {
-		
 		if(sessionHelper.checkSessionExist(request))
 		return ok(views.html.index.render(request, sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
 		else

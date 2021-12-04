@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.AbstractActorWithTimers;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,17 +10,21 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.egit.github.core.Issue;
 import play.cache.AsyncCacheApi;
+import scala.concurrent.duration.Duration;
 import services.GithubService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 
-public class RepositoryDetailsActor extends AbstractActor {
+public class RepositoryDetailsActor extends AbstractActorWithTimers {
 
     private ActorRef sessionActor;
     private AsyncCacheApi asyncCacheApi;
     private GithubService githubService;
+    private String username;
+    private String repositoryName;
 
     public RepositoryDetailsActor(ActorRef sessionActor, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         this.sessionActor = sessionActor;
@@ -41,13 +46,15 @@ public class RepositoryDetailsActor extends AbstractActor {
         return receiveBuilder()
                 .match(Messages.GetRepositoryDetailsActor.class, repositoryDetailsRequest -> {
                     getRepositoryDetails(repositoryDetailsRequest).thenAcceptAsync(this::processRepositoryDetails);
+                    getTimers().startPeriodicTimer("repositoryDetails",
+                            new Messages.GetRepositoryDetailsActor(this.username,this.repositoryName),
+                            Duration.create(5, TimeUnit.SECONDS));
                 })
                 .build();
     }
 
     private CompletionStage<JsonNode> getRepositoryDetails(Messages.GetRepositoryDetailsActor repositoryDetailRequest) throws Exception {
-        return asyncCacheApi.getOrElseUpdate(repositoryDetailRequest.username + "." + repositoryDetailRequest.repositoryName,
-                        () -> githubService.getRepositoryDetails(repositoryDetailRequest.username, repositoryDetailRequest.repositoryName))
+        return githubService.getRepositoryDetails(repositoryDetailRequest.username, repositoryDetailRequest.repositoryName)
                 .thenApplyAsync(
                         repositoryDetails -> {
                             ObjectMapper mapper = new ObjectMapper();
@@ -62,7 +69,9 @@ public class RepositoryDetailsActor extends AbstractActor {
                             issueNames.forEach(arrayNode::add);
                             repositoryData.put("responseType", "repositoryDetails");
                             repositoryData.set("repositoryDetails", repositoryJsonNode);
-                            repositoryData.set("issueList", arrayNode);
+                            JsonNode issuesJsonNode = mapper.convertValue(repositoryDetails.getIssues(), JsonNode.class);
+                            repositoryData.set("issueListNode", issuesJsonNode);
+
                             return repositoryData;
                         }
                 );

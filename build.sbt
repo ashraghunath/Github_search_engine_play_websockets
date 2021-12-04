@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
 //  "org.mockito" % "mockito-core" % "2.10.0" % "test",
   "org.json" % "json" % "20210307",
   "org.mockito" % "mockito-core" % "2.22.0" % "test",
-
+  "com.typesafe.akka" %% "akka-actor-testkit-typed" % "2.6.14",
   caffeine
 )
 

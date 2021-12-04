@@ -267,7 +267,12 @@ public class GithubService {
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
 
-			searchSessionMap.put(phrase,userRepositoryTopicsList);
+			Map<String, List<UserRepositoryTopics>> reverseMap = new LinkedHashMap<>(searchSessionMap);
+			searchSessionMap.clear();
+			searchSessionMap.put(phrase, userRepositoryTopicsList);
+			searchSessionMap.putAll(reverseMap);
+
+//			searchSessionMap.put(phrase,userRepositoryTopicsList);
 			return searchSessionMap;
 		});
 	}

@@ -136,6 +136,7 @@ ComposeRepositoryDetailsHtml = (message) ->
   repositoryName = message.repositoryDetails.name
   username = message.repositoryDetails.owner.login
 
+  $("#reponavbar").empty()
   div = $("<div>").addClass("container-fluid")
   ul = $("<ul>").addClass("nav navbar-nav navbar-right").attr("id","repo-page-hyperlinks")
   issuesSpan = $('<span>').addClass("glyphicon glyphicon-stats").append("</span>")
@@ -153,7 +154,7 @@ ComposeRepositoryDetailsHtml = (message) ->
   for key,value of message.repositoryDetails
     if(typeof value == "object")
       getRepositoryDetails value, repositoryName, dlList
-    else if(key == "openIssues" || key == "createdAt" || key == "updatedAt" || key == "pushedAt"  || key == "watchers" || key == "description" || key == "name" || key == "hasWiki" || key == "hasIssues" || key == "hasDownloads" || key == "masterBranch" || key == "forks" || key == "size" )
+    else if(key == "openIssues" || key == "watchers" || key == "description" || key == "name" || key == "hasWiki" || key == "hasIssues" || key == "hasDownloads" || key == "masterBranch" || key == "forks" || key == "size" )
       if(value!=null)
           h4key = $("<h4>").text(key).append("</h4>")
           dt = $("<dt>").prop("class", "col-sm-3").append(h4key)
@@ -161,28 +162,45 @@ ComposeRepositoryDetailsHtml = (message) ->
           dd = $("<dd>").prop("class", "col-sm-9").append(h4value)
           dlList.append(dt).append(dd)
           $('#repository-details').append(dlList)
+    else if(key == "createdAt" || key == "updatedAt" || key == "pushedAt")
+      if(value!=null)
+          h4key = $("<h4>").text(key).append("</h4>")
+          dt = $("<dt>").prop("class", "col-sm-3").append(h4key)
+          dateVal = new Date(value)
+          h4value = $("<h4>").text(dateVal.toUTCString()).append("</h4>")
+          dd = $("<dd>").prop("class", "col-sm-9").append(h4value)
+          dlList.append(dt).append(dd)
+          $('#repository-details').append(dlList)
 
   $('#repository-details').append "<br><b><h3>Issues of repository :  "+repositoryName+"</h3></b>"
-  if message.issueList.length > 0
+  if message.issueListNode.length > 0
       issuesTable = $("<table>").prop("class", "table").prop("border","1")
-      issuesTable.append "<thead><tr><th>Sl no.</th><th>Issues</th></thead><tbody>"
+      issuesTable.append "<thead><tr><th>Sl no.</th><th>HTML URL</th><th>State</th><th>Issue</th></thead><tbody>"
       $("#repository-details").append(issuesTable)
-
-      for key,value of message.issueList
-
-            issueData = $('<tr>')
-
-            index = parseInt(key) + 1
-            issueSlNo = $("<td>").text(index).append("</td>")
-            issueTitle = $("<td>").text(value).append("</td>")
-
-            issueData.append(issueSlNo).append(issueTitle)
+      for key,value of message.issueListNode
+            if(typeof value == "object")
+                issueData = $('<tr>')
+                index = parseInt(key) + 1
+                getIssuesListDetails value, issuesTable, issueData, index
             issuesTable.append(issueData)
             issuesTable.append("</tbody>")
       $("#repository-details").append(issuesTable).append("</tbody><br>")
   else
       $("#repository-details").append("No issues found")
 
+getIssuesListDetails = (objectValue, issuesTable, issueData, index) ->
+        for key,value of objectValue
+            if(key=="title")
+                issueTitle = $("<td>").text(value).append("</td>")
+                issueData.append(issueTitle)
+            if(key=="htmlUrl")
+                issueSlNo = $("<td>").text(index).append("</td>")
+                issueLink = $("<a>").text(value).attr("href",value).append("</a>")
+                issueHtmlUrl = $("<td>").append(issueLink).append("</td>")
+                issueData.append(issueSlNo).append(issueHtmlUrl)
+            if(key=="state")
+                issueState = $("<td>").text(value).append("</td>")
+                issueData.append(issueState)
 
 getRepositoryDetails = (objectValue, repositoryName, dlList ) ->
         for key,value of objectValue
