@@ -83,5 +83,23 @@ public class Messages {
         }
     }
 
+    public static final class GetIssueStatisticsActor {
+        public final String repositoryName;
+        public final String username;
+
+        public GetIssueStatisticsActor(String username, String repositoryName) {
+            this.username = username;
+            this.repositoryName = repositoryName;
+        }
+    }
+
+    public static final class IssueStatistics {
+        public final JsonNode issueStatistics;
+
+        public IssueStatistics(JsonNode issueWordLevelStats) {
+            this.issueStatistics = issueWordLevelStats;
+        }
+    }
+
 
 }
