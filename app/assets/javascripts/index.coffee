@@ -23,6 +23,11 @@ $ ->
         $("#repository-details").hide()
         ComposeTopicSearchHtml(message)
         $("#topic-page-result").show()
+      when "userDetails"
+        $("#search-page").hide()
+        $("#search-page-result").hide()
+        ComposeUserDetailsHtml(message)
+        $("#user-details").show()
 
   $("#searchForm").submit (event) ->
       event.preventDefault()
@@ -51,6 +56,10 @@ $ ->
     event.preventDefault()
     ws.send(JSON.stringify({repositoryDetails: $(this).text(), username: $(this).attr("username")}))
     return
+  $("#search-page-result").on "click", "a.user-details", (event) ->
+    event.preventDefault()
+    ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
+    return
 
 ComposeSearchPageHtml =  (message) ->
   $("#search-page-result").empty()
@@ -75,7 +84,7 @@ getSearchDetails = (objectValue, searchTable ) ->
 getSearchRepoValues = (objectValue, searchData ) ->
         for key,value of objectValue
             if(key=="owner")
-                userLink = $("<a>").text(value).attr("class", "user-details")
+                userLink = $("<a>").text(value).attr("class", "user-details").attr("username",value)
                 owner = $("<td>").append(userLink).append("</td>")
             else if(key=="name")
                 repositoryLink =  $("<a>").text(value).attr("class", "repository-details").attr("username",objectValue['owner'])
@@ -204,3 +213,33 @@ getRepositoryDetails = (objectValue, repositoryName, dlList ) ->
                        dlList.append(dt).append(dd)
                        $('#repository-details').append(dlList)
 
+ComposeUserDetailsHtml = (message) ->
+   $("#mainBanner").empty()
+   $("#mainBanner").removeAttr("style")
+   $("#mainBanner").append("<h1>").text("User Details")
+   $("#mainBanner").attr("style","margin-left: 450px;")
+   $("#user-details").empty()
+
+   username = message.userDetails.login
+   dlList = $("<dl>").prop("class","row")
+   $('#user-details').append(dlList)
+   for key,value of message.userDetails
+     if(key == "login" || key == "publicRepos" || key == "htmlUrl")
+       dt = $("<dt>").prop("class", "col-sm-3").text(key)
+       dd = $("<dd>").prop("class", "col-sm-9").text(value)
+       dlList.append(dt).append(dd)
+       $('#user-details').append(dlList)
+   $('#user-details').append "<br><b><h3>Repositories of User :  "+username+"</h3></b>"
+   if message.repositoryList.length > 0
+    repositoriesTable = $("<table>").prop("class", "table").prop("border","1")
+    repositoriesTable.append "<thead><tr><th>Sl no.</th><th>Issues</th></thead><tbody>"
+    $("#user-details").append(repositoriesTable)
+    for key,value of message.repositoryList
+        repositoryData = $('<tr>')
+        index = parseInt(key) + 1
+        repositorySlNo = $("<td>").text(index).append("</td>")
+        repositoryTitle = $("<td>").text(value).append("</td>")
+        repositoryData.append(repositorySlNo).append(repositoryTitle)
+        repositoriesTable.append(repositoryData)
+        repositoriesTable.append("</tbody>")
+    $("#user-details").append(repositoriesTable).append("</tbody><br>")
