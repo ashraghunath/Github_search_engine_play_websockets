@@ -27,6 +27,7 @@ public class SupervisorActor extends AbstractActor {
     private ActorRef issueStatActor = null;
     private ActorRef searchPageActor = null;
     private ActorRef topicsSearchActor = null;
+    private ActorRef userDetailsActor = null;
 
     public SupervisorActor(final ActorRef wsOut, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         this.wsOut =  wsOut;
@@ -54,6 +55,7 @@ public class SupervisorActor extends AbstractActor {
                 .match(Messages.RepositoryDetails.class, repositoryDetails -> wsOut.tell(repositoryDetails.repositoryDetails, self()))
                 .match(Messages.SearchResult.class, searchResult -> wsOut.tell(searchResult.searchResult, self()))
                 .match(Messages.TopicDetails.class,topicSearchInfo->wsOut.tell(topicSearchInfo.topicDetails,self()))
+                .match(Messages.UserDetails.class, userDetails -> wsOut.tell(userDetails.userDetails, self()))
                 .matchAny(other -> log.error("Received unknown message type: " + other.getClass()))
                 .build();
     }
@@ -87,6 +89,14 @@ public class SupervisorActor extends AbstractActor {
                 topicsSearchActor = getContext().actorOf(TopicsActor.props(self(),githubService,asyncCacheApi));
             }
             topicsSearchActor.tell(new Messages.GetRepositoryfromTopic(topic_name),getSelf());
+        }
+        else if(receivedJson.has("userDetails")) {
+            String username = receivedJson.get("username").asText();
+            if(userDetailsActor == null) {
+                log.info("Creating a user profile actor.");
+                userDetailsActor = getContext().actorOf(UserDetailsActor.props(self(), githubService, asyncCacheApi));
+            }
+            userDetailsActor.tell(new Messages.GetUserDetailsActor(username), getSelf());
         }
     }
 }

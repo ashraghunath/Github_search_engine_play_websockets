@@ -67,5 +67,21 @@ public class Messages {
         }
     }
 
+    public static final class GetUserDetailsActor {
+        public final String username;
+
+        public GetUserDetailsActor(String username) {
+            this.username = username;
+        }
+    }
+
+    public static final class UserDetails {
+        public final JsonNode userDetails;
+
+        public UserDetails(JsonNode userProfileResult) {
+            this.userDetails = userProfileResult;
+        }
+    }
+
 
 }
