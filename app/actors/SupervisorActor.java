@@ -24,7 +24,7 @@ public class SupervisorActor extends AbstractActor {
     final Map<String, ActorRef> queryToSearchActor = new HashMap<String, ActorRef>();
     private ActorRef userProfileActor = null;
     private ActorRef repositoryDetailsActor = null;
-    private ActorRef issueStatActor = null;
+    private ActorRef issueStatisticsActor = null;
     private ActorRef searchPageActor = null;
     private ActorRef topicsSearchActor = null;
     private ActorRef userDetailsActor = null;
@@ -53,6 +53,7 @@ public class SupervisorActor extends AbstractActor {
         return receiveBuilder()
                 .match(JsonNode.class, this::processRequest)
                 .match(Messages.RepositoryDetails.class, repositoryDetails -> wsOut.tell(repositoryDetails.repositoryDetails, self()))
+                .match(Messages.IssueStatistics.class, issueStatistics -> wsOut.tell(issueStatistics.issueStatistics, self()))
                 .match(Messages.SearchResult.class, searchResult -> wsOut.tell(searchResult.searchResult, self()))
                 .match(Messages.TopicDetails.class,topicSearchInfo->wsOut.tell(topicSearchInfo.topicDetails,self()))
                 .match(Messages.UserDetails.class, userDetails -> wsOut.tell(userDetails.userDetails, self()))
@@ -97,6 +98,15 @@ public class SupervisorActor extends AbstractActor {
                 userDetailsActor = getContext().actorOf(UserDetailsActor.props(self(), githubService, asyncCacheApi));
             }
             userDetailsActor.tell(new Messages.GetUserDetailsActor(username), getSelf());
+        }
+        else if(receivedJson.has("issueStatisticsPage")) {
+            String repositoryName = receivedJson.get("repositoryName").asText();
+            String userName = receivedJson.get("userName").asText();
+            if(issueStatisticsActor == null) {
+                log.info("Creating a issue statistics actor.");
+                issueStatisticsActor = getContext().actorOf(IssueStatisticsActor.props(self(), githubService, asyncCacheApi));
+            }
+            issueStatisticsActor.tell(new Messages.GetIssueStatisticsActor(userName, repositoryName), getSelf());
         }
     }
 }

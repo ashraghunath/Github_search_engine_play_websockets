@@ -178,15 +178,21 @@ public class GithubService {
 			// Mapping words with their frequency
 			Map<String, Integer> wordsCountMap = list.stream().map(eachWord -> eachWord)
 					.collect(Collectors.toMap(w -> w, w -> 1, Integer::sum));
-			wordsCountMap.put("Total Word Count", (int) count);
+
 
 			// Sorting the result in descending order
 			wordsCountMap = wordsCountMap.entrySet().stream()
 					.sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).collect(Collectors
 							.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-			return new IssueWordStatistics(wordsCountMap);
+
+			Map<String, Integer> wordsCountMapToDisplay = new LinkedHashMap<>();
+			wordsCountMapToDisplay.put("Total Word Count", (int) count);
+			wordsCountMapToDisplay.putAll(wordsCountMap);
+			return new IssueWordStatistics(wordsCountMapToDisplay);
 		});
 	}
+
+
 
 	/**
 	 * Returns the User details for the provided username

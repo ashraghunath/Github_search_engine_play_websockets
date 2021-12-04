@@ -28,6 +28,10 @@ $ ->
         $("#search-page-result").hide()
         ComposeUserDetailsHtml(message)
         $("#user-details").show()
+      when "issueStatisticsPage"
+        $("#repository-details").hide()
+        ComposeIssueStatisticsPageHtml(message)
+        $("#issue-statistics").show()
 
   $("#searchForm").submit (event) ->
       event.preventDefault()
@@ -59,6 +63,10 @@ $ ->
   $("#search-page-result").on "click", "a.user-details", (event) ->
     event.preventDefault()
     ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
+    return
+   $("#reponavbar").on "click", "a.issue-stat-link", (event) ->
+    event.preventDefault()
+    ws.send(JSON.stringify({issueStatisticsPage: "",repositoryName: $(this).attr("repositoryName"), userName: $(this).attr("username")}))
     return
 
 ComposeSearchPageHtml =  (message) ->
@@ -141,7 +149,7 @@ ComposeRepositoryDetailsHtml = (message) ->
   ul = $("<ul>").addClass("nav navbar-nav navbar-right").attr("id","repo-page-hyperlinks")
   issuesSpan = $('<span>').addClass("glyphicon glyphicon-stats").append("</span>")
   issuesSpan2 = $('<span>').addClass("glyphicon glyphicon-stats").append("</span>")
-  issuesStats = $("<a>").attr("username",username).attr("repositoryName",repositoryName).append("</a>").text(" Issues Statistics ").append(issuesSpan)
+  issuesStats = $("<a>").attr("username",username).attr("repositoryName",repositoryName).attr("class","issue-stat-link").append("</a>").text(" Issues Statistics ").append(issuesSpan)
   li =  $("<li>").append(issuesStats).append("</li>")
   commitStats = $("<a>").attr("username",username).attr("repositoryName",repositoryName).append("</a>").text(" Commit Statistics ").append(issuesSpan2)
   li2 =  $("<li>").append(commitStats).append("</li>")
@@ -261,3 +269,32 @@ ComposeUserDetailsHtml = (message) ->
         repositoriesTable.append(repositoryData)
         repositoriesTable.append("</tbody>")
     $("#user-details").append(repositoriesTable).append("</tbody><br>")
+
+ComposeIssueStatisticsPageHtml = (message) ->
+  $('#reponavbar').empty()
+  $("#mainBanner").empty()
+  $("#mainBanner").removeAttr("style")
+  $("#mainBanner").append("<h2>").text("Issue Word Level Statistics")
+  $("#mainBanner").attr("style","margin-left: 400px;")
+  $("#issue-statistics").empty()
+
+  repositoryName = message.respositoryName
+
+  $('#issue-statistics').append("<b>").attr( "style","padding: 5px;").append("Issue Word Level Statistics for " + repositoryName)
+
+  if message.issueStatList.wordfrequency != undefined
+        issueStatTable = $("<table>").prop("class", "table").prop("border","1")
+        issueStatTable.append "<thead><tr><th>Issue Keyword</th><th>Count</th></thead><tbody>"
+        $("#issue-statistics").append(issueStatTable)
+
+        for key,value of message.issueStatList.wordfrequency
+
+              issuesWordCountData = $('<tr>')
+              issuesWord = $("<td>").text(key).append("</td>")
+              issuesWordCount = $("<td>").text(value).append("</td>")
+              issuesWordCountData.append(issuesWord).append(issuesWordCount)
+              issueStatTable.append(issuesWordCountData)
+              issueStatTable.append("</tbody>")
+        $("#issue-statistics").append(issueStatTable).append("</tbody><br>")
+    else
+        $("#issue-statistics").append("No issues found")
