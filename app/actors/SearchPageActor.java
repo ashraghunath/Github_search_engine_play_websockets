@@ -5,14 +5,16 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import play.cache.AsyncCacheApi;
 import services.GithubService;
 
-
 import java.util.concurrent.CompletionStage;
+
+/**
+ * Actor to fetch the list of repositories for a given phrase on the main search page
+ * @author Ashwin Raghunath
+ */
 
 public class SearchPageActor extends AbstractActor {
 

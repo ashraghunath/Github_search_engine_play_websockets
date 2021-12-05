@@ -91,35 +91,6 @@ public class GithubService {
 
 	}
 
-	public CompletionStage<JsonNode> getRepositoryDetailsJsonNode(String username, String repositoryName) {
-		return CompletableFuture.supplyAsync(() -> {
-
-			Repository repository = null;
-			Map<String, String> params = new HashMap<String, String>();
-			params.put(IssueService.FILTER_STATE, "all");
-			ObjectNode repositoryData = null;
-			try {
-				repository = repositoryService.getRepository(username, repositoryName);
-				List<Issue> issues = issueService.getIssues(username, repositoryName, params).stream()
-						.sorted(Comparator.comparing(Issue::getUpdatedAt).reversed()).limit(20)
-						.collect(Collectors.toList());
-				List<String> list = new ArrayList<>();
-				ObjectMapper mapper = new ObjectMapper();
-				repositoryData = mapper.createObjectNode();
-				ArrayNode arrayNode = mapper.createArrayNode();
-				list.forEach(arrayNode::add);
-
-				JsonNode repositoryJsonNode = mapper.convertValue(repository, JsonNode.class);
-				JsonNode issueJsonNode = mapper.convertValue(issues, JsonNode.class);
-				repositoryData.set("repositoryProfile", repositoryJsonNode);
-				repositoryData.set("issueList", issueJsonNode);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return repositoryData;
-		});
-	}
-
 	/**
 	 * Returns the Word level Statistics for all Issues for the provided username
 	 * and repository name

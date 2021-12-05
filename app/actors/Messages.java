@@ -2,21 +2,11 @@ package actors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * Message class for all the actors
+ * @author Ashwin Raghunath, Anushka Shetty, Trusha Patel, Sourav Sinha
+ */
 public class Messages {
-    public static final class TrackSearch {
-        public final String searchQuery;
-        public final String requestType;
-
-        /**
-         * @param searchQuery Search query to be tracked by <code>SearchActor</code>
-         * @param requestType Indicates whether the request is a periodic search query sent by the search actor itself or a request sent from client side
-         */
-        public TrackSearch(String searchQuery, String requestType) {
-            this.searchQuery = searchQuery;
-            this.requestType = requestType;
-        }
-    }
-
     public static final class GetRepositoryDetailsActor {
         public final String repositoryName;
         public final String username;

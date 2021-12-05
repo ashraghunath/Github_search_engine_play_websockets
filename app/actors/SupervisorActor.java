@@ -1,7 +1,6 @@
 package actors;
 
 import akka.actor.AbstractActor;
-import akka.actor.Actor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
@@ -10,10 +9,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import play.cache.AsyncCacheApi;
 import services.GithubService;
 
-import java.util.HashMap;
-import java.util.Map;
 
-
+/**
+ * Actor to fetch the list of repositories for a given phrase on the main search page
+ * @author Ashwin Raghunath, Trusha Patel, Anushka Shetty, Sourav Sinha
+ */
 public class SupervisorActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
@@ -21,8 +21,6 @@ public class SupervisorActor extends AbstractActor {
     private GithubService githubService;
     private final AsyncCacheApi asyncCacheApi;
 
-    final Map<String, ActorRef> queryToSearchActor = new HashMap<String, ActorRef>();
-    private ActorRef userProfileActor = null;
     private ActorRef repositoryDetailsActor = null;
     private ActorRef issueStatisticsActor = null;
     private ActorRef searchPageActor = null;
@@ -57,7 +55,7 @@ public class SupervisorActor extends AbstractActor {
                 .match(Messages.SearchResult.class, searchResult -> wsOut.tell(searchResult.searchResult, self()))
                 .match(Messages.TopicDetails.class,topicSearchInfo->wsOut.tell(topicSearchInfo.topicDetails,self()))
                 .match(Messages.UserDetails.class, userDetails -> wsOut.tell(userDetails.userDetails, self()))
-                .matchAny(other -> log.error("Received unknown message type: " + other.getClass()))
+                .matchAny(other -> log.error("Unknown message received: " + other.getClass()))
                 .build();
     }
 
@@ -79,7 +77,7 @@ public class SupervisorActor extends AbstractActor {
             String username = receivedJson.get("username").asText();
             if(repositoryDetailsActor == null) {
                 log.info("Creating a repository profile actor.");
-                repositoryDetailsActor = getContext().actorOf(RepositoryDetailsActor.props(self(), githubService, asyncCacheApi));
+                repositoryDetailsActor = getContext().actorOf(RepositoryDetailsActor.props(self(), githubService));
             }
             repositoryDetailsActor.tell(new Messages.GetRepositoryDetailsActor(username, repositoryName), getSelf());
         }

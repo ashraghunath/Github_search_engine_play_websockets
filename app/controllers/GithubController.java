@@ -2,8 +2,6 @@ package controllers;
 
 import Helper.SessionHelper;
 import actors.SupervisorActor;
-import actors.TimeActor;
-import actors.UserActor;
 import play.cache.AsyncCacheApi;
 import play.data.DynamicForm;
 import play.data.FormFactory;
@@ -12,7 +10,6 @@ import play.libs.streams.ActorFlow;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.WebSocket;
-import router.Routes;
 import services.GithubService;
 
 import java.util.concurrent.CompletionStage;
@@ -20,7 +17,6 @@ import java.util.concurrent.CompletionStage;
 import static play.mvc.Results.ok;
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
-import views.html.actor;
 
 import javax.inject.Inject;
 
@@ -60,7 +56,6 @@ public class GithubController {
 	 * @param request object
 	 * @return Result View for the search page
 	 */
-	
 	public Result index(Http.Request request) {
 		if(sessionHelper.checkSessionExist(request))
 		return ok(views.html.index.render(request, sessionHelper.getSearchResultsForCurrentSession(request, null, null)));
@@ -68,10 +63,11 @@ public class GithubController {
 	    return ok(views.html.index.render(request,null)).addingToSession(request, sessionHelper.getSessionKey(), sessionHelper.generateSessionValue());
 	}
 
-	public Result actor(Http.Request request) {
-		return ok(actor.render(request));
-	}
-
+	/**
+	 * Establishes socket connection with supervisor actor
+	 * @return Websocket after initialization
+	 * @author Ashwin Raghunath
+	 */
 	public WebSocket ws() {
 		return WebSocket.Json.accept(request -> ActorFlow.actorRef(out -> SupervisorActor.props(out, githubService, cache), actorSystem, materializer));
 	}
