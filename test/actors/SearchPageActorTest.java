@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 /**
- * Test class for RepositoryDetailsActor
+ * Test class for SearchPageActor
  * @author Ashwin Raghunath
  */
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -57,7 +57,6 @@ public class SearchPageActorTest {
                         SearchPageActor.props(testProbe.getRef(), githubServiceMock, asyncCacheApi));
                 searchPageActor.tell(new Messages.SearchPageActor("phrase"), testProbe.getRef());
                 Messages.SearchResult searchResultResponse = testProbe.expectMsgClass(Messages.SearchResult.class);
-                System.out.println(searchResultResponse.searchResult);
                 assertEquals("searchResults",searchResultResponse.searchResult.get("responseType").asText());
                 assertEquals("name",searchResultResponse.searchResult.get("searchMap").get("JAVA AI DL").get(0).get("name").asText());
             }
