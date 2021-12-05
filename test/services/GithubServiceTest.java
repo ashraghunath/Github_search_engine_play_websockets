@@ -174,16 +174,16 @@ public class GithubServiceTest extends WithApplication {
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    @Test
-    public void getReposByTopicTest() throws IOException, InterruptedException, ExecutionException {
-        List<SearchRepository> searchRepos = searchRepos();
-        when(mockClient.getStream(any())).thenReturn(topicInputStream());
-        when(repositoryService.searchRepositories(anyMap())).thenReturn(searchRepos);
-        CompletionStage<List<UserRepositoryTopics>> searchedReposDetails = githubServiceMock.getReposByTopics("mocktopic");
-        assertNotNull(searchedReposDetails);
-        List<UserRepositoryTopics> details = searchedReposDetails.toCompletableFuture().get();
-        assertEquals(details.get(0).getName(),"repo1");
-    }
+//    @Test
+//    public void getReposByTopicTest() throws IOException, InterruptedException, ExecutionException {
+//        List<SearchRepository> searchRepos = searchRepos();
+//        when(mockClient.getStream(any())).thenReturn(topicInputStream());
+//        when(repositoryService.searchRepositories(anyMap())).thenReturn(searchRepos);
+//        CompletionStage<List<UserRepositoryTopics>> searchedReposDetails = githubServiceMock.getReposByTopics("mocktopic");
+//        assertNotNull(searchedReposDetails);
+//        List<UserRepositoryTopics> details = searchedReposDetails.toCompletableFuture().get();
+//        assertEquals(details.get(0).getName(),"repo1");
+//    }
 
     private List<SearchRepository> searchRepos() throws IOException {
         SearchRepository searchRepositoryMock1 = mock(SearchRepository.class);

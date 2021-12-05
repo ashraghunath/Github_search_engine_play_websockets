@@ -170,24 +170,24 @@ public class GithubControllerTest extends WithApplication {
      * @author Trusha Patel 40192614
      */
 
-    @Test
-    public void getReposByTopicsTest()
-    {
-        running(provideApplication(), () -> {
-            when(githubService.getReposByTopics(anyString())).thenReturn(searchedRepositoriesObject());
-            CompletionStage<Result> repositories = githubController.getReposByTopics("mocktopic");
-            try {
-                Result result = repositories.toCompletableFuture().get();
-                assertEquals(HttpStatus.SC_OK,result.status());
-                assertEquals("text/html",result.contentType().get());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        });
-
-    }
+//    @Test
+//    public void getReposByTopicsTest()
+//    {
+//        running(provideApplication(), () -> {
+//            when(githubService.getReposByTopics(anyString())).thenReturn(searchedRepositoriesObject());
+//            CompletionStage<Result> repositories = githubController.getReposByTopics("mocktopic");
+//            try {
+//                Result result = repositories.toCompletableFuture().get();
+//                assertEquals(HttpStatus.SC_OK,result.status());
+//                assertEquals("text/html",result.contentType().get());
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            } catch (ExecutionException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//
+//    }
 
     /**
      *

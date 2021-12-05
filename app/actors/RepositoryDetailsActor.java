@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Actor to fetch the repository details for a given repo
+ * Actor to fetch the repository details for a given repository
  * @author Ashwin Raghunath
  */
 public class RepositoryDetailsActor extends AbstractActorWithTimers {
