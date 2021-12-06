@@ -122,27 +122,13 @@ public class GithubController {
 		return resultCompletionStage;
 	}
 
-	/** Returns the Repositories that contains the given topic
-	 * @author Trusha Patel
-	 * @param topic_name of the repository
-	 * @return represents the async response containing the process stage of Result
-	 * 			object for the repository details matching the topic
-	 */
 
-	public CompletionStage<Result> getReposByTopics(String topic_name) {
-		CompletionStage<Result> results = githubService.getReposByTopics(topic_name)
-				.thenApplyAsync(repository -> ok(views.html.topics2.render(topic_name,
-								repository.get("searchProfile"),assetsFinder)),
-						httpExecutionContext.current());
-		return results;
 
-	}
-
-	/** Returns the User Details for the provided user
-	 * @author Sourav Uttam Sinha 40175660
-	 * @param userName the user who owns the repository.
-	 * @return represents the async response containing the process stage of Result object for the user details
-	 */
+		/** Returns the User Details for the provided user
+         * @author Sourav Uttam Sinha 40175660
+         * @param userName the user who owns the repository.
+         * @return represents the async response containing the process stage of Result object for the user details
+         */
 
 	public CompletionStage<Result> getUserDetails(String userName) {
 
