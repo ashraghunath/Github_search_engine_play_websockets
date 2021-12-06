@@ -124,21 +124,6 @@ public class GithubController {
 
 
 
-		/** Returns the User Details for the provided user
-         * @author Sourav Uttam Sinha 40175660
-         * @param userName the user who owns the repository.
-         * @return represents the async response containing the process stage of Result object for the user details
-         */
-
-	public CompletionStage<Result> getUserDetails(String userName) {
-
-		CompletionStage<Result> results = cache
-				.getOrElseUpdate((userName + ".getUserDetails"),
-						() -> githubService.getUserDetails(userName)
-								.thenApplyAsync(user -> ok(views.html.user.render(user))));
-		return results;
-	}
-
 	/**
 	 * Returns the repository commits' details for the given repository
 	 *

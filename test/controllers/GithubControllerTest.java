@@ -137,33 +137,6 @@ public class GithubControllerTest extends WithApplication {
         });
     }
 
-    /** Unit test for resting the endpoint /getUserDetails/:userName
-     * @author Sourav Uttam Sinha 40175660
-     */
-//    @Test
-//    public void getUserDetailsTest()
-//    {
-//        running(provideApplication(), () -> {
-//            when(cache.getOrElseUpdate(any(),any())).thenReturn(userDetailsObject());
-//            CompletionStage<Result> userDetails = githubController.getUserDetails("userName");
-//            assertTrue(userDetails.toCompletableFuture().isDone());
-//        });
-//    }
-
-
-    /** mock object for testing getRepositoryDetailsTest
-     * @author Sourav Uttam Sinha 40175660
-     * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
-     */
-    private CompletionStage<Object> userDetailsObject(){
-        return CompletableFuture.supplyAsync( () -> {
-            UserDetails userDetails = new UserDetails();
-            User user = new User();
-            user.setName("MockUserName");
-            userDetails.setUser(user);
-            return userDetails;
-        });
-    }
 
 }
 

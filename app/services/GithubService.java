@@ -168,7 +168,7 @@ public class GithubService {
 
 	/**
 	 * Returns the User details for the provided username
-	 *
+	 * @author Sourav Uttam Sinha 40175660
 	 * @param userName the user who owns the repository.
 	 * @return represents the async response
 	 *         containing the process stage of RepositoryDetails object

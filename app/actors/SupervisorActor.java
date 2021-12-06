@@ -93,7 +93,7 @@ public class SupervisorActor extends AbstractActor {
             String username = receivedJson.get("username").asText();
             if(userDetailsActor == null) {
                 log.info("Creating a user profile actor.");
-                userDetailsActor = getContext().actorOf(UserDetailsActor.props(self(), githubService, asyncCacheApi));
+                userDetailsActor = getContext().actorOf(UserDetailsActor.props(self(), githubService));
             }
             userDetailsActor.tell(new Messages.GetUserDetailsActor(username), getSelf());
         }
