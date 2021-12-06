@@ -6,6 +6,7 @@ import akka.testkit.javadsl.TestKit;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.IssueWordStatistics;
 import models.RepositoryDetails;
 import models.UserRepositoryTopics;
 import org.eclipse.egit.github.core.Issue;
@@ -26,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -127,6 +129,57 @@ public class SupervisorActorTest {
             Map<String,List<UserRepositoryTopics>> map = new HashMap<>();
             map.put("JAVA AI DL", Arrays.asList(userRepositoryTopics));
             return map;
+        });
+    }
+
+    /**
+     * Test case for IssueStatisticsActor flow in SupervisorActor
+     */
+    @Test
+    public void supervisorActorTestForIssueWordLevelStats() {
+
+        new TestKit(actorSystem) {
+            {
+                Mockito.when(githubServiceMock.getAllIssues(anyString(), anyString())).thenReturn(issueStatsCompletionStage());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode issueStatData = mapper.createObjectNode();
+
+                issueStatData.put("issueStatisticsPage", "");
+                issueStatData.put("repositoryName", "KP_G05");
+                issueStatData.put("userName", "anushkashetty96");
+
+                //issueStatData.put("issueStatList", "{\"exception\":1,\"reference\":1,\"pointer\":1,\"null\":2,\"bound\":1,\"index\":1,\"out\":1}\n");
+                final ActorRef supervisorActor = actorSystem.actorOf(
+                        SupervisorActor.props(testProbe.getRef(), githubServiceMock,asyncCacheApi));
+                supervisorActor.tell(issueStatData, testProbe.getRef());
+                ObjectNode issueStatsJsonNode = testProbe.expectMsgClass(ObjectNode.class);
+                JsonNode issueStatistics = issueStatsJsonNode.get("issueStatList");
+                assertEquals("issueStatisticsPage",issueStatsJsonNode.get("responseType").asText());
+                assertEquals(2,issueStatistics.get("wordfrequency").get("null").asInt());
+                assertEquals("KP_G05",issueStatsJsonNode.get("respositoryName").asText());
+            }
+        };
+    }
+
+    /**
+     * Mock IssueWordStatistics object
+     * @return future of IssueWordStatistics
+     */
+    public CompletionStage<IssueWordStatistics> issueStatsCompletionStage()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+
+            Map<String,Integer> wordFrequency = new HashMap<>();
+            wordFrequency.put("null",2);
+            wordFrequency.put("pointer",1);
+            wordFrequency.put("exception",1);
+            wordFrequency.put("reference",1);
+            wordFrequency.put("index",1);
+            wordFrequency.put("out",1);
+            wordFrequency.put("bound",1);
+            IssueWordStatistics issueWordStatistics = new IssueWordStatistics(wordFrequency);
+            return issueWordStatistics;
+
         });
     }
 }
