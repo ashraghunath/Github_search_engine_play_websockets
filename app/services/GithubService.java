@@ -110,6 +110,7 @@ public class GithubService {
 			parameters.put(IssueService.FILTER_STATE, IssueService.STATE_OPEN);
 
 			try {
+				System.out.println("Calling Github API to fetch Issue Word Level Stats");
 				issues = issueService.getIssues(userName, repositoryName, parameters);
 			} catch (IOException e) {
 				e.printStackTrace();
