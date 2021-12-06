@@ -25,6 +25,7 @@ $ ->
         $("#search-page").hide()
         $("#search-page-result").hide()
         $("#repository-details").hide()
+        $("#user-details").hide()
         ComposeTopicSearchHtml(message)
         $("#topic-page-result").show()
       when "userDetails"
