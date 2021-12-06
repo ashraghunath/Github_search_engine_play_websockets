@@ -2,6 +2,8 @@ $ ->
   # Requests a web socket from the server for two-way fully duplex communication
   ws = new WebSocket $("#gitterific-home").data("ws-url")
   # On receiving a message, checks the response type and renders data accordingly
+  console.log("here i am at socket creation")
+  console.log(ws)
   ws.onmessage = (event) ->
     message = JSON.parse event.data
     switch message.responseType
@@ -68,6 +70,10 @@ $ ->
     event.preventDefault()
     ws.send(JSON.stringify({issueStatisticsPage: "",repositoryName: $(this).attr("repositoryName"), userName: $(this).attr("username")}))
     return
+   $("#topic-page-result").on "click", "a.user-details", (event) ->
+     event.preventDefault()
+     ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
+     return
 
 ComposeSearchPageHtml =  (message) ->
   $("#search-page-result").empty()
@@ -110,16 +116,16 @@ ComposeTopicSearchHtml = (message) ->
     $("#mainBanner").append($("<h1>").text("Topics Search"))
     $("#mainBanner").attr("style","margin-left: 450px;")
     $("#topic-page-result").empty()
-    topicName = message.searchProfile.searchProfile.keyword
+    topicName = message.searchProfile.keyword
     $("#mainBanner").append($("<h3>").text("Repository from topic"+ topicName))
     searchTable = $("<table>").prop("class", "table").prop("border","1")
     searchTable.append "<thead><tr><th>Repository</th><th>User</th><th>Topics</th></thead><tbody>"
-    for repository in message.searchProfile.searchProfile.repos
+    for repository in message.searchProfile.repos
         searchData = $("<tr>")
         repositoryLink = $("<a>").text(repository.name).attr("class", "repository-details").attr("username",repository.owner)
         repository_user = $("<td>").append(repositoryLink).append("</td>")
         searchData.append(repository_user)
-        userProfileLink = $("<a>").text(repository.owner).attr("class", "user-details")
+        userProfileLink = $("<a>").text(repository.owner).attr("class", "user-details").attr("username",repository.owner)
         userData  = $("<td>").append(userProfileLink).append("</td>")
         searchData.append(userProfileLink)
         topicList =$("<p>").text("")
@@ -132,6 +138,7 @@ ComposeTopicSearchHtml = (message) ->
         searchTable.append(searchData)
     searchTable.append($("</tbody>"))
     $("#topic-page-result").append(searchTable)
+
 
 ComposeRepositoryDetailsHtml = (message) ->
   $("#mainBanner").empty()
