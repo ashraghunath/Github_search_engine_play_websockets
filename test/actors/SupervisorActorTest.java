@@ -8,9 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.IssueWordStatistics;
 import models.RepositoryDetails;
+import models.SearchResults;
 import models.UserRepositoryTopics;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.SearchRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,15 +21,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import play.cache.AsyncCacheApi;
 import services.GithubService;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -180,6 +178,51 @@ public class SupervisorActorTest {
             IssueWordStatistics issueWordStatistics = new IssueWordStatistics(wordFrequency);
             return issueWordStatistics;
 
+        });
+    }
+
+    /**
+     * Test case for RepositoryDetailsActor flow in SupervisorActor
+     */
+    @Test
+    public void supervisorActorTestForTopicsSearchFlow() {
+
+        new TestKit(actorSystem) {
+            {
+                Mockito.when(asyncCacheApi.getOrElseUpdate(anyString(),any())).thenReturn(topicsSearchCompletionStage());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode topicData = mapper.createObjectNode();
+                topicData.put("topicsDetails", "java");
+                final ActorRef supervisor = actorSystem.actorOf(
+                        SupervisorActor.props(testProbe.getRef(), githubServiceMock, asyncCacheApi));
+                supervisor.tell(topicData, testProbe.getRef());
+                ObjectNode topicsInfoNode = testProbe.expectMsgClass(ObjectNode.class);
+                //System.out.println("Topics INfo: "+ topicsInfoNode);
+                assertEquals("topicsDetails", topicsInfoNode.get("responseType").asText());
+                List<String> owners = new ArrayList<>();
+                for(JsonNode repository:topicsInfoNode.get("searchProfile").get("repos"))
+                {
+                    owners.add(repository.get("owner").asText());
+                }
+                assertEquals(Arrays.asList("owner1","owner2"),owners);
+            }
+        };
+    }
+
+    public CompletionStage<Object> topicsSearchCompletionStage()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+            SearchResults searchResults = new SearchResults();
+            List<UserRepositoryTopics> searchItem = new ArrayList<>();
+            UserRepositoryTopics userRepositoryTopics1 = new UserRepositoryTopics("owner1","name1");
+            userRepositoryTopics1.setTopics(Arrays.asList("topic1","topic2"));
+            UserRepositoryTopics userRepositoryTopics2 = new UserRepositoryTopics("owner2","name2");
+            userRepositoryTopics2.setTopics(Arrays.asList("topic3","topic4"));
+            searchItem.add(userRepositoryTopics1);
+            searchItem.add(userRepositoryTopics2);
+            searchResults.setKeyword("java");
+            searchResults.setRepos(searchItem);
+            return searchResults;
         });
     }
 }

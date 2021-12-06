@@ -5,7 +5,9 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import play.cache.AsyncCacheApi;
 import services.GithubService;
 
@@ -20,7 +22,6 @@ public class SupervisorActor extends AbstractActor {
     private final ActorRef wsOut;
     private GithubService githubService;
     private final AsyncCacheApi asyncCacheApi;
-
     private ActorRef repositoryDetailsActor = null;
     private ActorRef issueStatisticsActor = null;
     private ActorRef searchPageActor = null;
@@ -32,13 +33,12 @@ public class SupervisorActor extends AbstractActor {
         this.githubService = githubService;
         this.asyncCacheApi = asyncCacheApi;
 
-    }
 
+    }
 
     public static Props props(final ActorRef wsout, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         return Props.create(SupervisorActor.class, wsout, githubService, asyncCacheApi);
     }
-
 
     @Override
     public void preStart() {
@@ -60,8 +60,9 @@ public class SupervisorActor extends AbstractActor {
     }
 
 
-    private void processRequest(JsonNode receivedJson) {
+    private void processRequest(JsonNode receivedJson) throws JsonProcessingException {
     	log.info(receivedJson.asText());
+        ObjectMapper mapper = new ObjectMapper();
         if(receivedJson.has("searchPage")) {
 
             if(searchPageActor==null)
@@ -84,7 +85,6 @@ public class SupervisorActor extends AbstractActor {
         else if(receivedJson.has("topicsDetails")){
             String topic_name = receivedJson.get("topicsDetails").asText();
             if(topicsSearchActor == null){
-                //System.out.println("A topics actor created");
                 topicsSearchActor = getContext().actorOf(TopicsActor.props(self(),githubService,asyncCacheApi));
             }
             topicsSearchActor.tell(new Messages.GetRepositoryfromTopic(topic_name),getSelf());

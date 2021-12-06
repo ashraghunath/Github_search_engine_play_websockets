@@ -11,9 +11,8 @@ POST     /search                    controllers.GithubController.search(request:
 
 GET      /getUserDetails/:userName      controllers.GithubController.getUserDetails(userName: String)
 
-#GET      /getRepositoryDetails/:userName/:repositoryName      controllers.GithubController.getRepositoryDetails(userName : String, repositoryName : String)
 GET      /getRepositoryIssues/:userName/:repositoryName      controllers.GithubController.getIssues(userName : String, repositoryName : String)
-GET		/getReposByTopics/:topicName							controllers.GithubController.getReposByTopics(topicName : String)
+
 GET		/getCommitStats/:userName/:repositoryName						controllers.GithubController.getRepositoryCommits(userName : String, repositoryName : String)
 
 #GET     /                           controllers.GithubController.actor(request: Request)
