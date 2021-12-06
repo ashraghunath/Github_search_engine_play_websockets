@@ -9,10 +9,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.IssueWordStatistics;
 import models.RepositoryDetails;
 import models.SearchResults;
+import models.UserDetails;
 import models.UserRepositoryTopics;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.SearchRepository;
+import org.eclipse.egit.github.core.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,6 +75,29 @@ public class SupervisorActorTest {
     }
 
     /**
+     * Test case for UserDetailsActor flow in SupervisorActor
+     */
+    @Test
+    public void supervisorActorTestForUserDetailsFlow() {
+
+        new TestKit(actorSystem) {
+            {
+                Mockito.when(githubServiceMock.getUserDetails(anyString())).thenReturn(userDetailsCompletionStage());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode userData = mapper.createObjectNode();
+                userData.put("userDetails", "sauravus");
+                userData.put("username", "sauravus");
+                final ActorRef supervisorActor = actorSystem.actorOf(
+                        SupervisorActor.props(testProbe.getRef(), githubServiceMock,asyncCacheApi));
+                supervisorActor.tell(userData, testProbe.getRef());
+                ObjectNode userDetailsJsonNode = testProbe.expectMsgClass(ObjectNode.class);
+                assertEquals("userDetails",userDetailsJsonNode.get("responseType").asText());
+                assertEquals("sauravus",userDetailsJsonNode.get("userDetails").get("name").asText());
+            }
+        };
+    }
+
+    /**
      * Test case for SearchPageActor flow in SupervisorActor
      */
     @Test
@@ -117,6 +142,27 @@ public class SupervisorActorTest {
     }
 
     /**
+     * Mock UserDetails object
+     * @return future of UserDetails
+     */
+    public CompletionStage<UserDetails> userDetailsCompletionStage()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+
+            User user = new User();
+            user.setName("sauravus");
+            Repository repository = new Repository();
+            repository.setName("title");
+            List<Repository> repositories = Arrays.asList(repository);
+            UserDetails userDetails = new UserDetails();
+            userDetails.setUser(user);
+            userDetails.setRepository(repositories);
+            return userDetails;
+
+        });
+    }
+
+    /**
      * Mock searchResult object
      * @return future of Object that gets return on calling search function in github service
      */
@@ -129,6 +175,8 @@ public class SupervisorActorTest {
             return map;
         });
     }
+
+
 
     /**
      * Test case for IssueStatisticsActor flow in SupervisorActor
