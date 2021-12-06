@@ -182,7 +182,7 @@ public class SupervisorActorTest {
     }
 
     /**
-     * Test case for RepositoryDetailsActor flow in SupervisorActor
+     * Test case for TopicsActor flow in SupervisorActor
      */
     @Test
     public void supervisorActorTestForTopicsSearchFlow() {

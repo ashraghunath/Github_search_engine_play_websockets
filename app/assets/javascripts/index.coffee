@@ -11,6 +11,7 @@ $ ->
         $("#search-page").hide()
         $("#search-page-result").hide()
         $("#topic-page-result").hide()
+        $("#user-details").hide()
         ComposeRepositoryDetailsHtml(message)
         $("#repository-details").show()
       when "searchResults"
@@ -19,15 +20,19 @@ $ ->
         $("#search-page-result").show()
         $("#repository-details").hide()
         $("#topic-page-result").hide()
+        $("#user-details").hide()
       when "topicsDetails"
         $("#search-page").hide()
         $("#search-page-result").hide()
         $("#repository-details").hide()
+        $("#user-details").hide()
         ComposeTopicSearchHtml(message)
         $("#topic-page-result").show()
       when "userDetails"
         $("#search-page").hide()
         $("#search-page-result").hide()
+        $("#repository-details").hide()
+        $("#topic-page-result").hide()
         ComposeUserDetailsHtml(message)
         $("#user-details").show()
       when "issueStatisticsPage"
