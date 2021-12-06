@@ -102,7 +102,7 @@ public class SupervisorActor extends AbstractActor {
             String userName = receivedJson.get("userName").asText();
             if(issueStatisticsActor == null) {
                 log.info("Creating a issue statistics actor.");
-                issueStatisticsActor = getContext().actorOf(IssueStatisticsActor.props(self(), githubService, asyncCacheApi));
+                issueStatisticsActor = getContext().actorOf(IssueStatisticsActor.props(self(), githubService));
             }
             issueStatisticsActor.tell(new Messages.GetIssueStatisticsActor(userName, repositoryName), getSelf());
         }
