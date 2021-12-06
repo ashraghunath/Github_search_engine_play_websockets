@@ -299,7 +299,7 @@ public class GithubServiceTest extends WithApplication {
         repositoryCommit.add(repoCommit1);
         when(commitService.getCommits(any())).thenReturn(repositoryCommit);
         when(mockClient.getStream(any())).thenReturn(commitStatsInputStream());
-        CompletionStage<CommitDetails> result = githubServiceMock.getCommitsForRepository("anmol", "repo");
+        CompletionStage<CommitDetails> result = githubServiceMock.getCommitStatisticsForRepository("anmol", "repo");
         CommitDetails finalResult = result.toCompletableFuture().get();
         Assert.assertTrue(result.toCompletableFuture().isDone());
         Assert.assertEquals(1,finalResult.getMapOfUserAndCommits().size());

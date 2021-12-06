@@ -3,9 +3,7 @@ package services;
 import Helper.SessionHelper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.Gson;
 import com.typesafe.config.Config;
 import models.*;
 import org.eclipse.egit.github.core.*;
@@ -332,7 +330,7 @@ public class GithubService {
 	 * @return Commit Stats for the Repository with the Top Committers
 	 * @author Anmol Malhotra 40201452
 	 */
-	public CompletionStage<CommitDetails> getCommitsForRepository(String userName, String repositoryName) {
+	public CompletionStage<CommitDetails> getCommitStatisticsForRepository(String userName, String repositoryName) {
 		return supplyAsync(() -> {
 			CommitDetails commitDetails = new CommitDetails();
 			try {
