@@ -67,9 +67,9 @@ public class RepositoryDetailsActor extends AbstractActorWithTimers {
         return receiveBuilder()
                 .match(Messages.GetRepositoryDetailsActor.class, repositoryDetailsRequest -> {
                     getRepositoryDetails(repositoryDetailsRequest).thenAcceptAsync(this::processRepositoryDetails);
-                    getTimers().startPeriodicTimer("repositoryDetails",
-                            new Messages.GetRepositoryDetailsActor(repositoryDetailsRequest.username,repositoryDetailsRequest.repositoryName),
-                            Duration.create(15, TimeUnit.SECONDS));
+//                    getTimers().startPeriodicTimer("repositoryDetails",
+//                            new Messages.GetRepositoryDetailsActor(repositoryDetailsRequest.username,repositoryDetailsRequest.repositoryName),
+//                            Duration.create(15, TimeUnit.SECONDS));
                 })
                 .build();
     }

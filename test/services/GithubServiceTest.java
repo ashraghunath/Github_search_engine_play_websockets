@@ -258,6 +258,18 @@ public class GithubServiceTest extends WithApplication {
 
     }
 
+    @Test
+    public void searchResultsUsingActorstest() throws IOException, ExecutionException, InterruptedException {
+        List<SearchRepository> searchRepositoryList = searchRepositoryList();
+        when(repositoryService.searchRepositories(anyString(),anyInt())).thenReturn(searchRepositoryList);
+        when(mockClient.getStream(any())).thenReturn(topicInputStream());
+        CompletionStage<Map<String, List<UserRepositoryTopics>>> results = githubServiceMock.searchResultsUsingActors("phrase");
+        assertNotNull(results);
+        Map<String, List<UserRepositoryTopics>> stringListMap = results.toCompletableFuture().get();
+        assertEquals(1,stringListMap.size());
+
+    }
+
     /**
      * Mock object for testing search
      * @author Ashwin Raghunath 40192120

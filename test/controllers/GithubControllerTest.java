@@ -60,39 +60,6 @@ public class GithubControllerTest extends WithApplication {
         Result result = route(app, request);
         assertEquals(OK, result.status());
     }
-    /** Unit test for resting the endpoint /getRepositoryDetails/:userName/:repositoryName
-     * @author Ashwin Raghunath 40192120
-     */
-    @Test
-    public void getRepositoryDetailsTest()
-    {
-        running(provideApplication(), () -> {
-            when(cache.getOrElseUpdate(any(),any())).thenReturn(repositoryDetailsObject());
-            CompletionStage<Result> repositoryDetails = githubController.getRepositoryDetails("play", "play");
-            try {
-                repositoryDetails.toCompletableFuture().get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            assertTrue(repositoryDetails.toCompletableFuture().isDone());
-        });
-    }
-
-    /** mock object for testing getRepositoryDetailsTest
-     * @author Ashwin Raghunath 40192120
-     * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
-     */
-    private CompletionStage<Object> repositoryDetailsObject(){
-        return CompletableFuture.supplyAsync( () -> {
-            RepositoryDetails repositoryDetails = new RepositoryDetails();
-            Repository repository = new Repository();
-            repository.setName("MockRepoName");
-            repositoryDetails.setRepository(repository);
-            return repositoryDetails;
-        });
-    }
 
     /** Unit test for resting the endpoint /getRepositoryIssues/:userName/:repositoryName   
      * @author Anushka Shetty 40192371
