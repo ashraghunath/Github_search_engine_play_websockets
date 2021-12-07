@@ -1,12 +1,10 @@
 package actors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-//import org.json.HTTP;
-import play.mvc.Http;
 
 /**
  * Message class for all the actors
- * @author Ashwin Raghunath, Anushka Shetty, Trusha Patel, Sourav Sinha
+ * @author Ashwin Raghunath, Anushka Shetty, Trusha Patel, Sourav Sinha, Anmol Malhotra
  */
 public class Messages {
     public static final class GetRepositoryDetailsActor {
@@ -92,6 +90,25 @@ public class Messages {
 
         public IssueStatistics(JsonNode issueWordLevelStats) {
             this.issueStatistics = issueWordLevelStats;
+        }
+    }
+
+
+    public static final class GetCommitStatisticsActor {
+        public final String repositoryName;
+        public final String username;
+
+        public GetCommitStatisticsActor(String username, String repositoryName) {
+            this.username = username;
+            this.repositoryName = repositoryName;
+        }
+    }
+
+    public static final class CommitStatistics {
+        public final JsonNode commitStatistics;
+
+        public CommitStatistics(JsonNode commitStatistics) {
+            this.commitStatistics = commitStatistics;
         }
     }
 

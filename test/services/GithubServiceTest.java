@@ -1,5 +1,6 @@
 package services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import models.*;
 import org.eclipse.egit.github.core.*;
@@ -263,7 +264,7 @@ public class GithubServiceTest extends WithApplication {
         List<SearchRepository> searchRepositoryList = searchRepositoryList();
         when(repositoryService.searchRepositories(anyString(),anyInt())).thenReturn(searchRepositoryList);
         when(mockClient.getStream(any())).thenReturn(topicInputStream());
-        CompletionStage<Map<String, List<UserRepositoryTopics>>> results = githubServiceMock.searchResultsUsingActors("phrase");
+        CompletionStage<Map<String, List<UserRepositoryTopics>>> results = githubServiceMock.searchResultsUsingActors("phrase","session-key");
         assertNotNull(results);
         Map<String, List<UserRepositoryTopics>> stringListMap = results.toCompletableFuture().get();
         assertEquals(1,stringListMap.size());
@@ -315,7 +316,7 @@ public class GithubServiceTest extends WithApplication {
         repositoryCommit.add(repoCommit1);
         when(commitService.getCommits(any())).thenReturn(repositoryCommit);
         when(mockClient.getStream(any())).thenReturn(commitStatsInputStream());
-        CompletionStage<CommitDetails> result = githubServiceMock.getCommitsForRepository("anmol", "repo");
+        CompletionStage<CommitDetails> result = githubServiceMock.getCommitStatisticsForRepository("anmol", "repo");
         CommitDetails finalResult = result.toCompletableFuture().get();
         Assert.assertTrue(result.toCompletableFuture().isDone());
         Assert.assertEquals(1,finalResult.getMapOfUserAndCommits().size());

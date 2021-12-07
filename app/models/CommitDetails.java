@@ -12,8 +12,8 @@ public class CommitDetails {
     private int minimumDeletions;
     private int maximumAdditions;
     private int maximumDeletions;
-    private int AverageDeletions;
-    private int AverageAdditions;
+    private int averageDeletions;
+    private int averageAdditions;
     private Map<String, Integer> mapOfUserAndCommits;
 
     public Map<String, Integer> getMapOfUserAndCommits() {
@@ -73,18 +73,18 @@ public class CommitDetails {
     }
 
     public int getAverageDeletions() {
-        return AverageDeletions;
+        return averageDeletions;
     }
 
     public void setAverageDeletions(int averageDeletions) {
-        AverageDeletions = averageDeletions;
+        this.averageDeletions = averageDeletions;
     }
 
     public int getAverageAdditions() {
-        return AverageAdditions;
+        return averageAdditions;
     }
 
     public void setAverageAdditions(int averageAdditions) {
-        AverageAdditions = averageAdditions;
+        this.averageAdditions = averageAdditions;
     }
 }

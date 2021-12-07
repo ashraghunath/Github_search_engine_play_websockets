@@ -102,7 +102,7 @@ public class GithubController {
 	 */
 
 	public CompletionStage<Result> getRepositoryCommits(String userName, String repositoryName) {
-		return githubService.getCommitsForRepository(userName, repositoryName)
+		return githubService.getCommitStatisticsForRepository(userName, repositoryName)
 				.thenApplyAsync(commits -> ok(views.html.commits.render(commits)));
 
 	}

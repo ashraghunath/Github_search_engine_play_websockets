@@ -14,7 +14,7 @@ import services.GithubService;
 
 /**
  * Actor to fetch the list of repositories for a given phrase on the main search page
- * @author Ashwin Raghunath, Trusha Patel, Anushka Shetty, Sourav Sinha
+ * @author Ashwin Raghunath, Trusha Patel, Anushka Shetty, Sourav Sinha, Anmol Malhotra
  */
 public class SupervisorActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -27,18 +27,18 @@ public class SupervisorActor extends AbstractActor {
     private ActorRef searchPageActor = null;
     private ActorRef topicsSearchActor = null;
     private ActorRef userDetailsActor = null;
+    private ActorRef commitStatisticsActor = null;
 
     public SupervisorActor(final ActorRef wsOut, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         this.wsOut =  wsOut;
         this.githubService = githubService;
         this.asyncCacheApi = asyncCacheApi;
-
-
     }
 
     public static Props props(final ActorRef wsout, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         return Props.create(SupervisorActor.class, wsout, githubService, asyncCacheApi);
     }
+
 
     @Override
     public void preStart() {
@@ -55,6 +55,7 @@ public class SupervisorActor extends AbstractActor {
                 .match(Messages.SearchResult.class, searchResult -> wsOut.tell(searchResult.searchResult, self()))
                 .match(Messages.TopicDetails.class,topicSearchInfo->wsOut.tell(topicSearchInfo.topicDetails,self()))
                 .match(Messages.UserDetails.class, userDetails -> wsOut.tell(userDetails.userDetails, self()))
+                .match(Messages.CommitStatistics.class, commitStatistics -> wsOut.tell(commitStatistics.commitStatistics, self()))
                 .matchAny(other -> log.error("Unknown message received: " + other.getClass()))
                 .build();
     }
@@ -105,6 +106,17 @@ public class SupervisorActor extends AbstractActor {
                 issueStatisticsActor = getContext().actorOf(IssueStatisticsActor.props(self(), githubService));
             }
             issueStatisticsActor.tell(new Messages.GetIssueStatisticsActor(userName, repositoryName), getSelf());
+        }
+        else if(receivedJson.has("commitStatisticsPage")) {
+            System.out.println(receivedJson);
+            String repositoryName = receivedJson.get("repositoryName").asText();
+            String userName = receivedJson.get("userName").asText();
+            System.out.println(repositoryName + userName);
+            if(commitStatisticsActor == null) {
+                System.out.println("Creating a commit statistics actor.");
+                commitStatisticsActor = getContext().actorOf(CommitStatisticsActor.props(self(), githubService));
+            }
+            commitStatisticsActor.tell(new Messages.GetCommitStatisticsActor(userName, repositoryName), getSelf());
         }
     }
 }

@@ -39,6 +39,10 @@ $ ->
         $("#repository-details").hide()
         ComposeIssueStatisticsPageHtml(message)
         $("#issue-statistics").show()
+      when "commitStatisticsPage"
+        $("#repository-details").hide()
+        ComposeCommitStatisticsPageHtml(message)
+        $('#commit-statistics').show()
 
   $("#searchForm").submit (event) ->
       event.preventDefault()
@@ -71,14 +75,18 @@ $ ->
     event.preventDefault()
     ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
     return
-   $("#reponavbar").on "click", "a.issue-stat-link", (event) ->
+  $("#reponavbar").on "click", "a.issue-stat-link", (event) ->
     event.preventDefault()
     ws.send(JSON.stringify({issueStatisticsPage: "",repositoryName: $(this).attr("repositoryName"), userName: $(this).attr("username")}))
     return
-   $("#topic-page-result").on "click", "a.user-details", (event) ->
-     event.preventDefault()
-     ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
-     return
+  $("#topic-page-result").on "click", "a.user-details", (event) ->
+    event.preventDefault()
+    ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
+    return
+  $("#reponavbar").on "click", "a.commit-statistics-link", (event) ->
+    event.preventDefault()
+    ws.send(JSON.stringify({commitStatisticsPage: "", repositoryName: $(this).attr("repositoryName"), userName: $(this).attr("username")}))
+    return
 
 ComposeSearchPageHtml =  (message) ->
   $("#search-page-result").empty()
@@ -144,7 +152,6 @@ ComposeTopicSearchHtml = (message) ->
     searchTable.append($("</tbody>"))
     $("#topic-page-result").append(searchTable)
 
-
 ComposeRepositoryDetailsHtml = (message) ->
   $("#mainBanner").empty()
   $("#mainBanner").removeAttr("style")
@@ -163,7 +170,7 @@ ComposeRepositoryDetailsHtml = (message) ->
   issuesSpan2 = $('<span>').addClass("glyphicon glyphicon-stats").append("</span>")
   issuesStats = $("<a>").attr("username",username).attr("repositoryName",repositoryName).attr("class","issue-stat-link").append("</a>").text(" Issues Statistics ").append(issuesSpan)
   li =  $("<li>").append(issuesStats).append("</li>")
-  commitStats = $("<a>").attr("username",username).attr("repositoryName",repositoryName).append("</a>").text(" Commit Statistics ").append(issuesSpan2)
+  commitStats = $("<a>").attr("username",username).attr("repositoryName",repositoryName).attr("class","commit-statistics-link").append("</a>").text(" Commit Statistics ").append(issuesSpan2)
   li2 =  $("<li>").append(commitStats).append("</li>")
   ul.append(li).append(li2).append("</ul>")
   div.append(ul).append("</div>")
@@ -310,3 +317,93 @@ ComposeIssueStatisticsPageHtml = (message) ->
         $("#issue-statistics").append(issueStatTable).append("</tbody><br>")
     else
         $("#issue-statistics").append("No issues found")
+
+ComposeCommitStatisticsPageHtml = (message) ->
+  $('#reponavbar').empty()
+  $("#mainBanner").empty()
+  $("#mainBanner").removeAttr("style")
+  $("#mainBanner").append("<h2>").text("Commit Statistics")
+  $("#mainBanner").attr("style","margin-left: 400px;")
+  $("#commit-statistics").empty()
+
+  repositoryName = message.repositoryName
+
+  $('#commit-statistics').append("<b>").attr( "style","padding: 5px;").append("Commit Statistics for " + repositoryName)
+
+  dlList = $("<dl>").prop("class","row")
+  $('#commit-statistics').append(dlList)
+  totalCommitsOnRepositoryKey = $("<h4>").text("Total commits on Repository: ").append("</h4>")
+  dt = $("<dt>").prop("class", "col-sm-3").append(totalCommitsOnRepositoryKey)
+  totalCommitsOnRepositoryValue = $("<h4>").text(message.commitStatsList.totalCommitsOnRepository).append("</h4>")
+  dd = $("<dd>").prop("class", "col-sm-9").append(totalCommitsOnRepositoryValue)
+  dlList.append(dt).append(dd)
+  $('#commit-statistics').append(dlList)
+
+  dlList = $("<dl>").prop("class","row")
+  $('#commit-statistics').append(dlList)
+  minimumAdditionsOnRepositoryKey = $("<h4>").text("Minimum Additions: ").append("</h4>")
+  dt = $("<dt>").prop("class", "col-sm-3").append(minimumAdditionsOnRepositoryKey)
+  minimumAdditionsOnRepositoryValue = $("<h4>").text(message.commitStatsList.minimumAdditions).append("</h4>")
+  dd = $("<dd>").prop("class", "col-sm-9").append(minimumAdditionsOnRepositoryValue)
+  dlList.append(dt).append(dd)
+  $('#commit-statistics').append(dlList)
+
+  dlList = $("<dl>").prop("class","row")
+  $('#commit-statistics').append(dlList)
+  maximumAdditionsOnRepositoryKey = $("<h4>").text("Maximum Additions: ").append("</h4>")
+  dt = $("<dt>").prop("class", "col-sm-3").append(maximumAdditionsOnRepositoryKey)
+  maximumAdditionsOnRepositoryValue = $("<h4>").text(message.commitStatsList.maximumAdditions).append("</h4>")
+  dd = $("<dd>").prop("class", "col-sm-9").append(maximumAdditionsOnRepositoryValue)
+  dlList.append(dt).append(dd)
+  $('#commit-statistics').append(dlList)
+
+  dlList = $("<dl>").prop("class","row")
+  $('#commit-statistics').append(dlList)
+  minimumDeletionsOnRepositoryKey = $("<h4>").text("Minimum Deletions: ").append("</h4>")
+  dt = $("<dt>").prop("class", "col-sm-3").append(minimumDeletionsOnRepositoryKey)
+  minimumDeletionsOnRepositoryValue = $("<h4>").text(message.commitStatsList.minimumDeletions).append("</h4>")
+  dd = $("<dd>").prop("class", "col-sm-9").append(minimumDeletionsOnRepositoryValue)
+  dlList.append(dt).append(dd)
+  $('#commit-statistics').append(dlList)
+
+  dlList = $("<dl>").prop("class","row")
+  $('#commit-statistics').append(dlList)
+  maximumDeletionsOnRepositoryKey = $("<h4>").text("Maximum Deletions: ").append("</h4>")
+  dt = $("<dt>").prop("class", "col-sm-3").append(maximumDeletionsOnRepositoryKey)
+  maximumDeletionsOnRepositoryValue = $("<h4>").text(message.commitStatsList.maximumDeletions).append("</h4>")
+  dd = $("<dd>").prop("class", "col-sm-9").append(maximumDeletionsOnRepositoryValue)
+  dlList.append(dt).append(dd)
+  $('#commit-statistics').append(dlList)
+
+  dlList = $("<dl>").prop("class","row")
+  $('#commit-statistics').append(dlList)
+  averageAdditionsOnRepositoryKey = $("<h4>").text("Average Additions: ").append("</h4>")
+  dt = $("<dt>").prop("class", "col-sm-3").append(averageAdditionsOnRepositoryKey)
+  averageAdditionsOnRepositoryValue = $("<h4>").text(message.commitStatsList.averageAdditions).append("</h4>")
+  dd = $("<dd>").prop("class", "col-sm-9").append(averageAdditionsOnRepositoryValue)
+  dlList.append(dt).append(dd)
+  $('#commit-statistics').append(dlList)
+
+  dlList = $("<dl>").prop("class","row")
+  $('#commit-statistics').append(dlList)
+  averageDeletionsOnRepositoryKey = $("<h4>").text("Average Deletions: ").append("</h4>")
+  dt = $("<dt>").prop("class", "col-sm-3").append(averageDeletionsOnRepositoryKey)
+  averageDeletionsOnRepositoryValue = $("<h4>").text(message.commitStatsList.averageDeletions).append("</h4>")
+  dd = $("<dd>").prop("class", "col-sm-9").append(averageDeletionsOnRepositoryValue)
+  dlList.append(dt).append(dd)
+  $('#commit-statistics').append(dlList)
+
+  if message.commitStatsList.mapOfUserAndCommits != undefined
+    commitStatsTable = $("<table>").prop("class", "table").prop("border","1")
+    commitStatsTable.append "<thead><tr><th>User Name</th><th>Count</th></thead><tbody>"
+    $("#commit-statistics").append(commitStatsTable)
+    for key,value of message.commitStatsList.mapOfUserAndCommits
+        commitCountData = $('<tr>')
+        userNameData = $("<td>").text(key).append("</td>")
+        userCommitCount = $("<td>").text(value).append("</td>")
+        commitCountData.append(userNameData).append(userCommitCount)
+        commitStatsTable.append(commitCountData)
+        commitStatsTable.append("</tbody>")
+        $("#commit-statistics").append(commitStatsTable).append("</tbody><br>")
+  else
+    $("#commit-statistics").append("No User-Commits Data found")
