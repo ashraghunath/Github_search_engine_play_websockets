@@ -39,7 +39,6 @@ public class CommitStatisticsActor extends AbstractActor {
      */
 
     public static Props props(ActorRef supervisorActor, GithubService githubService) {
-        System.out.println("in commit actor props");
         return Props.create(CommitStatisticsActor.class, supervisorActor, githubService);
     }
 
@@ -68,7 +67,6 @@ public class CommitStatisticsActor extends AbstractActor {
      * @return JsonNode of the commit statistics
      */
     private CompletionStage<JsonNode> getCommitStatistics(Messages.GetCommitStatisticsActor commitStatsActor) {
-        System.out.println("in method getCommitStatistics in Actor");
         return githubService.getCommitStatisticsForRepository(commitStatsActor.username, commitStatsActor.repositoryName)
                 .thenApplyAsync(commitStatsData -> {
                     ObjectMapper objectMapper = new ObjectMapper();
@@ -77,7 +75,6 @@ public class CommitStatisticsActor extends AbstractActor {
 
                     commitStatObjectNode.put("responseType", "commitStatisticsPage");
                     commitStatObjectNode.set("commitStatsList", commitStatsJsonNode);
-                    System.out.println("repo name is: " + commitStatsActor.repositoryName);
                     commitStatObjectNode.put("repositoryName", commitStatsActor.repositoryName);
                     return commitStatObjectNode;
                 });

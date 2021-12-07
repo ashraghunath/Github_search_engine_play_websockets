@@ -71,39 +71,4 @@ public class GithubController {
 		return WebSocket.Json.accept(request -> ActorFlow.actorRef(out -> SupervisorActor.props(out, githubService, cache), actorSystem, materializer));
 	}
 
-
-	/**
-	 * Returns the Repository Issues for the provided username and repository name
-	 * 
-	 * @author Anushka Shetty 401923
-	 * @param userName       the user who owns the repository.
-	 * @param repositoryName the name of the repository to be searched for.
-	 * @return represents the async response containing the
-	 *         process stage of Result object for the issue details
-	 */
-	public CompletionStage<Result> getIssues(String userName, String repositoryName) {
-		CompletionStage<Result> resultCompletionStage = githubService.getAllIssues(userName, repositoryName)
-				.thenApply(issues -> ok(views.html.issues.render(issues)));
-
-		return resultCompletionStage;
-	}
-
-
-
-	/**
-	 * Returns the repository commits' details for the given repository
-	 *
-	 * @param userName       owner of the repository
-	 * @param repositoryName name of the repository
-	 * @return represents the async response containing the process stage of Result object for the commits
-	 * @param userName owner of the repository
-	 * @param repositoryName name of the respository
-	 * @return represents the async response containing the process stage of Result object for the commits
-	 */
-
-	public CompletionStage<Result> getRepositoryCommits(String userName, String repositoryName) {
-		return githubService.getCommitStatisticsForRepository(userName, repositoryName)
-				.thenApplyAsync(commits -> ok(views.html.commits.render(commits)));
-
-	}
 }

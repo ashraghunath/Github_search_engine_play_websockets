@@ -22,21 +22,20 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Actor to fetch the list of repositories for a given phrase on the main search page
- * @author Ashwin Raghunath
+ * @author Ashwin Raghunath , Anushka Shetty
  */
-
 public class SearchPageActor extends AbstractActorWithTimers {
 
     // Acts as user level cache
     private String sessionKey;
-    private ActorRef sessionActor;
+    private ActorRef supervisorActor;
     private GithubService githubService;
     private AsyncCacheApi asyncCacheApi;
     private SessionHelper sessionHelper;
 
 
-    public SearchPageActor(ActorRef sessionActor, GithubService githubService, AsyncCacheApi asyncCacheApi) {
-        this.sessionActor = sessionActor;
+    public SearchPageActor(ActorRef supervisorActor, GithubService githubService, AsyncCacheApi asyncCacheApi) {
+        this.supervisorActor = supervisorActor;
         this.githubService = githubService;
         this.asyncCacheApi=asyncCacheApi;
         this.sessionHelper = new SessionHelper();
@@ -77,6 +76,6 @@ public class SearchPageActor extends AbstractActorWithTimers {
                 );
     }
     private void processSearchResult(JsonNode searchResult) {
-        sessionActor.tell(new Messages.SearchResult(searchResult), getSelf());
+        supervisorActor.tell(new Messages.SearchResult(searchResult), getSelf());
     }
 }

@@ -51,8 +51,8 @@ public class SearchPageActorTest {
 
         new TestKit(actorSystem) {
             {
-                Mockito.when(asyncCacheApi.getOrElseUpdate(anyString(),any())).thenReturn(completionStageSearch());
-//                Mockito.when(githubServiceMock.searchResultsUsingActors(anyString())).thenReturn(completionStageSearch());
+                Mockito.when(githubServiceMock.searchResultsUsingActors(anyString(),anyString())).thenReturn(searchResultsMockObject());
+//                Mockito.when(asyncCacheApi.getOrElseUpdate(anyString(),any())).thenReturn(completionStageSearch());
                 final ActorRef searchPageActor = actorSystem.actorOf(
                         SearchPageActor.props(testProbe.getRef(), githubServiceMock, asyncCacheApi));
                 searchPageActor.tell(new Messages.SearchPageActor("phrase"), testProbe.getRef());
@@ -61,6 +61,18 @@ public class SearchPageActorTest {
                 assertEquals("name",searchResultResponse.searchResult.get("searchMap").get("JAVA AI DL").get(0).get("name").asText());
             }
         };
+    }
+
+    public CompletionStage<Map<String,List<UserRepositoryTopics>>> searchResultsMockObject()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+
+            Map<String,List<UserRepositoryTopics>> map = new HashMap<>();
+            UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics("owner","name");
+            map.put("JAVA AI DL",Arrays.asList(userRepositoryTopics));
+            return map;
+
+        });
     }
 
     /**

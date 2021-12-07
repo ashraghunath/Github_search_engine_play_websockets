@@ -108,10 +108,8 @@ public class SupervisorActor extends AbstractActor {
             issueStatisticsActor.tell(new Messages.GetIssueStatisticsActor(userName, repositoryName), getSelf());
         }
         else if(receivedJson.has("commitStatisticsPage")) {
-            System.out.println(receivedJson);
             String repositoryName = receivedJson.get("repositoryName").asText();
             String userName = receivedJson.get("userName").asText();
-            System.out.println(repositoryName + userName);
             if(commitStatisticsActor == null) {
                 System.out.println("Creating a commit statistics actor.");
                 commitStatisticsActor = getContext().actorOf(CommitStatisticsActor.props(self(), githubService));

@@ -8,13 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.egit.github.core.Issue;
-import scala.concurrent.duration.Duration;
 import services.GithubService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 
 
 /**

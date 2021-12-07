@@ -83,7 +83,6 @@ public class TopicsActor extends AbstractActor {
                             JsonNode repositoryJsonNode = mapper.convertValue(searchDetails, JsonNode.class);
                             repositoryData.put("responseType", "topicsDetails");
                             repositoryData.set("searchProfile", repositoryJsonNode);
-                            //System.out.println("Inside actor my json:" + repositoryData);
                             return repositoryData;
                         }
                 );

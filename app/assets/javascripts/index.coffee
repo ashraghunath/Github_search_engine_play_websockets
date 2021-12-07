@@ -75,6 +75,10 @@ $ ->
     event.preventDefault()
     ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
     return
+  $("#repository-details").on "click", "a.user-details", (event) ->
+    event.preventDefault()
+    ws.send(JSON.stringify({userDetails: $(this).text(), username: $(this).attr("username")}))
+    return
   $("#reponavbar").on "click", "a.issue-stat-link", (event) ->
     event.preventDefault()
     ws.send(JSON.stringify({issueStatisticsPage: "",repositoryName: $(this).attr("repositoryName"), userName: $(this).attr("username")}))
@@ -234,7 +238,8 @@ getRepositoryDetails = (objectValue, repositoryName, dlList ) ->
             if(key == "login")
                   if(value!=null)
                       userProfileLink = $("<a>").text(value).attr("href", "/user-profile/" + repositoryName)
-                      userProfileLink.addClass("user-profile-link")
+                      userProfileLink.addClass("user-details")
+                      userProfileLink.attr("username",value)
                       h4key = $("<h4>").text(key).append("</h4>")
                       dt = $("<dt>").prop("class", "col-sm-3").append(h4key)
                       h4value = $("<h4>").append(userProfileLink).append("</h4>")
@@ -259,6 +264,7 @@ getRepositoryDetails = (objectValue, repositoryName, dlList ) ->
                        $('#repository-details').append(dlList)
 
 ComposeUserDetailsHtml = (message) ->
+   $('#reponavbar').empty()
    $("#mainBanner").empty()
    $("#mainBanner").removeAttr("style")
    $("#mainBanner").append("<h1>").text("User Details")

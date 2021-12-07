@@ -102,7 +102,8 @@ public class SupervisorActorTest {
 
         new TestKit(actorSystem) {
             {
-                Mockito.when(asyncCacheApi.getOrElseUpdate(anyString(),any())).thenReturn(completionStageSearch());
+                Mockito.when(githubServiceMock.searchResultsUsingActors(anyString(),anyString())).thenReturn(searchResultsMockObject());
+//                Mockito.when(asyncCacheApi.getOrElseUpdate(anyString(),any())).thenReturn(completionStageSearch());
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode repositoryData = mapper.createObjectNode();
                 repositoryData.put("searchPage", "JAVA AI DL");
@@ -170,6 +171,18 @@ public class SupervisorActorTest {
             Map<String,List<UserRepositoryTopics>> map = new HashMap<>();
             map.put("JAVA AI DL", Arrays.asList(userRepositoryTopics));
             return map;
+        });
+    }
+
+    public CompletionStage<Map<String,List<UserRepositoryTopics>>> searchResultsMockObject()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+
+            Map<String,List<UserRepositoryTopics>> map = new HashMap<>();
+            UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics("owner","name");
+            map.put("JAVA AI DL",Arrays.asList(userRepositoryTopics));
+            return map;
+
         });
     }
 

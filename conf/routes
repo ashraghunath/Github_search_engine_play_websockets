@@ -8,10 +8,6 @@ GET     /                           controllers.GithubController.index(request: 
 #Github
 + nocsrf
 
-GET      /getRepositoryIssues/:userName/:repositoryName      controllers.GithubController.getIssues(userName : String, repositoryName : String)
-
-GET		/getCommitStats/:userName/:repositoryName						controllers.GithubController.getRepositoryCommits(userName : String, repositoryName : String)
-
 GET     /ws                         controllers.GithubController.ws
 
 # Map static resources from the /public folder to the /assets URL path

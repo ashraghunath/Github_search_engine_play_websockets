@@ -66,9 +66,9 @@ public class UserDetailsActor extends AbstractActorWithTimers {
         return receiveBuilder()
                 .match(Messages.GetUserDetailsActor.class, userDetailsRequest -> {
                     getUserDetails(userDetailsRequest).thenAcceptAsync(this::processUserDetails);
-                    getTimers().startPeriodicTimer("userDetails",
-                            new Messages.GetUserDetailsActor(userDetailsRequest.username),
-                            Duration.create(10, TimeUnit.SECONDS));
+//                    getTimers().startPeriodicTimer("userDetails",
+//                            new Messages.GetUserDetailsActor(userDetailsRequest.username),
+//                            Duration.create(10, TimeUnit.SECONDS));
                 })
                 .build();
     }
