@@ -1,9 +1,6 @@
 package services;
 
 import Helper.SessionHelper;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.typesafe.config.Config;
 import models.*;
 import org.eclipse.egit.github.core.*;
@@ -11,8 +8,6 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.service.*;
 import org.json.JSONObject;
-import play.mvc.Http;
-
 import javax.inject.Inject;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -196,34 +191,13 @@ public class GithubService {
 
 	/**
 	 * List of the search results of the phrase entered by the user
-	 * 
-	 * @author Ashwin Raghunath 40192120
-	 * @param request incoming request value from search
-	 * @param phrase
+	 *
+	 * @param sessionKey current session key for the incoming request
+	 * @param phrase keyword to search the repositories for
 	 * @return map of the results after searching for repositories
+	 * @author Ashwin Raghunath 40192120, Anushka Shetty 40192371
+	 *
 	 */
-	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResults(Http.Request request, String phrase) {
-		return CompletableFuture.supplyAsync(() -> {
-			try {
-				searchRepositoryList = repositoryService.searchRepositories(phrase, 0).stream()
-						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
-						.collect(Collectors.toList());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			List<UserRepositoryTopics> userRepositoryTopicsList = new ArrayList<>();
-			for (SearchRepository searchRepository : searchRepositoryList) {
-				UserRepositoryTopics userRepositoryTopics = new UserRepositoryTopics(searchRepository.getOwner(),
-						searchRepository.getName());
-				userRepositoryTopics.setTopics(getTopics(searchRepository));
-				userRepositoryTopicsList.add(userRepositoryTopics);
-			}
-			Map<String, List<UserRepositoryTopics>> searchMap = sessionHelper.getSearchResultsForCurrentSession(request,
-					phrase, userRepositoryTopicsList);
-
-			return searchMap;
-		});
-	}
 
 	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResultsUsingActors(String phrase, String sessionKey) {
 		Map<String, List<UserRepositoryTopics>> searchMap = new LinkedHashMap<>();
@@ -255,19 +229,14 @@ public class GithubService {
 			if(searchSessionMap.containsKey(sessionKey))
 				searchMap.putAll(searchSessionMap.get(sessionKey));
 			return searchMap;
-
 		});
-
-
-
 	}
 
 	/**
-	 * @author Trusha Patel
+	 * Function to return the results queried by a topic name
 	 * @param topic_name The query topic
-	 * @return  represents the async
-	 *         response containing the process stage of SearchedRepositoryDetails
-	 *         object
+	 * @return  represents the async response containing the process stage of SearchResults object
+	 *  @author Trusha Patel
 	 */
 
 	public CompletionStage<SearchResults> getReposByTopics(String topic_name){
@@ -296,7 +265,6 @@ public class GithubService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			//System.out.println("trusha json service:" + repositoryData);
 
 			return results;
 
