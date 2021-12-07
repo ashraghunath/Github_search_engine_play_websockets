@@ -3,7 +3,8 @@ package models;
 import java.util.List;
 
 /**
- * Class to represent the rep
+ * Class to represent the searched repositories object
+ * @author Trusha Patel
  */
 
 public class SearchResults {

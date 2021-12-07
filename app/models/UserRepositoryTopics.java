@@ -19,6 +19,12 @@ public class UserRepositoryTopics extends SearchRepository {
     Date pushedAt;
     String description;
 
+    /**
+     * Contstructor for UserRepository object's creation
+     * @param owner The owner name of the repository
+     * @param name The name of the repository
+     */
+
     public UserRepositoryTopics(String owner, String name) {
         super(owner, name);
         topics = new ArrayList<>();
