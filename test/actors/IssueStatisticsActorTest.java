@@ -5,8 +5,6 @@ import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.IssueWordStatistics;
-import models.RepositoryDetails;
-import org.eclipse.egit.github.core.Repository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

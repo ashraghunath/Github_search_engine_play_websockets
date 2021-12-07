@@ -6,15 +6,12 @@ import akka.testkit.javadsl.TestKit;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.IssueWordStatistics;
-import models.RepositoryDetails;
-import models.SearchResults;
-import models.UserDetails;
-import models.UserRepositoryTopics;
+import models.*;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -273,4 +270,54 @@ public class SupervisorActorTest {
             return searchResults;
         });
     }
+
+    /**
+     * Test case for CommitStatisticsActor flow in SupervisorActor
+     */
+    @Test
+    public void supervisorActorTestForCommitStats() {
+
+        new TestKit(actorSystem) {
+            {
+                Mockito.when(githubServiceMock.getCommitStatisticsForRepository(anyString(), anyString())).thenReturn(commitStatisticsCompletionStage());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode commitStatsData = mapper.createObjectNode();
+
+                commitStatsData.put("commitStatisticsPage", "");
+                commitStatsData.put("repositoryName", "KP_G05");
+                commitStatsData.put("userName", "anmolMalhotra97");
+
+                final ActorRef supervisorActor = actorSystem.actorOf(
+                        SupervisorActor.props(testProbe.getRef(), githubServiceMock,asyncCacheApi));
+                supervisorActor.tell(commitStatsData, testProbe.getRef());
+                ObjectNode commitStatsJsonNode = testProbe.expectMsgClass(ObjectNode.class);
+                JsonNode commitStatistics = commitStatsJsonNode.get("commitStatsList");
+                assertEquals("commitStatisticsPage",commitStatsJsonNode.get("responseType").asText());
+                Assert.assertEquals(1, commitStatistics.get("mapOfUserAndCommits").size());
+            }
+        };
+    }
+
+    /**
+     * Mock CommitStatistics object
+     * @return future of CommitDetails
+     */
+    public CompletionStage<CommitDetails> commitStatisticsCompletionStage() {
+        return CompletableFuture.supplyAsync(() -> {
+            models.CommitDetails commitDetails = new models.CommitDetails();
+            commitDetails.setRepositoryName("repo");
+            commitDetails.setTotalCommitsOnRepository(1);
+            commitDetails.setMinimumAdditions(160);
+            commitDetails.setMinimumDeletions(0);
+            commitDetails.setMaximumAdditions(160);
+            commitDetails.setMaximumDeletions(0);
+            commitDetails.setAverageAdditions(160);
+            commitDetails.setAverageDeletions(0);
+            HashMap<String, Integer> userCommitsMap = new HashMap<>();
+            userCommitsMap.put("anmol", 1);
+            commitDetails.setMapOfUserAndCommits(userCommitsMap);
+            return commitDetails;
+        });
+    }
+
 }

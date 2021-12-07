@@ -1,8 +1,6 @@
 package actors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-//import org.json.HTTP;
-import play.mvc.Http;
 
 /**
  * Message class for all the actors
