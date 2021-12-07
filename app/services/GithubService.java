@@ -108,6 +108,7 @@ public class GithubService {
 			parameters.put(IssueService.FILTER_STATE, IssueService.STATE_OPEN);
 
 			try {
+				System.out.println("Calling Github API to fetch Issue Word Level Stats");
 				issues = issueService.getIssues(userName, repositoryName, parameters);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -165,7 +166,7 @@ public class GithubService {
 
 	/**
 	 * Returns the User details for the provided username
-	 *
+	 * @author Sourav Uttam Sinha 40175660
 	 * @param userName the user who owns the repository.
 	 * @return represents the async response
 	 *         containing the process stage of RepositoryDetails object
@@ -249,6 +250,7 @@ public class GithubService {
 
 //			searchSessionMap.put(phrase,userRepositoryTopicsList);
 			return searchSessionMap;
+
 		});
 	}
 
@@ -260,14 +262,12 @@ public class GithubService {
 	 *         object
 	 */
 
-	public CompletionStage<JsonNode> getReposByTopics(String topic_name){
+	public CompletionStage<SearchResults> getReposByTopics(String topic_name){
 		return CompletableFuture.supplyAsync(() -> {
 			SearchResults results = new SearchResults();
 			Map<String, String> searchQuery = new HashMap<String, String>();
 			searchQuery.put("topic", topic_name);
 			List<SearchRepository> searchRepositoryList = null;
-			ObjectMapper mapper = new ObjectMapper();
-			ObjectNode repositoryData = mapper.createObjectNode();
 			try {
 				searchRepositoryList = repositoryService.searchRepositories(searchQuery).stream()
 						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
@@ -288,11 +288,9 @@ public class GithubService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			JsonNode repositoryJsonNode = mapper.convertValue(results, JsonNode.class);
-			repositoryData.set("searchProfile", repositoryJsonNode);
 			//System.out.println("trusha json service:" + repositoryData);
 
-			return repositoryData;
+			return results;
 
 		});
 

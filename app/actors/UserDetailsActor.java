@@ -1,58 +1,87 @@
 package actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.AbstractActorWithTimers;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import akka.actor.typed.Behavior;
-import akka.actor.typed.javadsl.Behaviors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.UserDetails;
 import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.User;
-import play.cache.AsyncCacheApi;
+import scala.concurrent.duration.Duration;
 import services.GithubService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 
-public class UserDetailsActor extends AbstractActor{
+/**
+ * Actor to fetch the user details for a given user
+ * @author Sourav Uttam Sinha 40175660
+ */
+public class UserDetailsActor extends AbstractActorWithTimers {
 
-    private ActorRef sessionActor;
-    private AsyncCacheApi asyncCacheApi;
+    private ActorRef supervisorActor;
     private GithubService githubService;
 
-    public UserDetailsActor(ActorRef sessionActor, GithubService githubService, AsyncCacheApi asyncCacheApi) {
-        this.sessionActor = sessionActor;
+    /**
+     * Constructor needed in order create actor using Props method
+     * @author Sourav Uttam Sinha 40175660
+     * @param supervisorActor actor reference of the supervisor
+     * @param githubService service used to fetch user details
+     */
+    public UserDetailsActor(ActorRef supervisorActor, GithubService githubService) {
+        this.supervisorActor = supervisorActor;
         this.githubService = githubService;
-        this.asyncCacheApi = asyncCacheApi;
     }
 
-    public static Props props(ActorRef sessionActor, GithubService githubService, AsyncCacheApi asyncCacheApi) {
-        return Props.create(UserDetailsActor.class, sessionActor, githubService , asyncCacheApi);
+    /**
+     * Props method of akka to create the actor
+     * @author Sourav Uttam Sinha 40175660
+     * @param supervisorActor actor reference of the supervisor
+     * @param githubService service used to fetch user details
+     * @return
+     */
+    public static Props props(ActorRef supervisorActor, GithubService githubService) {
+        return Props.create(UserDetailsActor.class, supervisorActor, githubService);
     }
 
+    /**
+     * Runs on initialization of UserDetailsActor
+     */
     @Override
     public void preStart() {
         System.out.println("UserDetails actor created.");
     }
 
+    /**
+     * Matches the incoming message for the UserDetailsActor
+     * @author Sourav Uttam Sinha 40175660
+     * @return Builder object after formation
+     */
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Messages.GetUserDetailsActor.class, userProfileRequest -> {
-                    getUserDetails(userProfileRequest).thenAcceptAsync(this::processUserProfileResult);
+                .match(Messages.GetUserDetailsActor.class, userDetailsRequest -> {
+                    getUserDetails(userDetailsRequest).thenAcceptAsync(this::processUserDetails);
+                    getTimers().startPeriodicTimer("userDetails",
+                            new Messages.GetUserDetailsActor(userDetailsRequest.username),
+                            Duration.create(10, TimeUnit.SECONDS));
                 })
                 .build();
     }
 
-    private CompletionStage<JsonNode> getUserDetails(Messages.GetUserDetailsActor userProfileRequest) throws Exception {
+    /** calls the githubService and fetches the JsonNode result of the repository
+     * @author Sourav Uttam Sinha 40175660
+     * @param userDetailRequest request object consisting username
+     * @return JsonNode of the user details searched
+     * @throws Exception
+     */
+    private CompletionStage<JsonNode> getUserDetails(Messages.GetUserDetailsActor userDetailRequest) throws Exception {
 
-        return asyncCacheApi.getOrElseUpdate(userProfileRequest.username + ".",
-                () -> githubService.getUserDetails(userProfileRequest.username))
+        return githubService.getUserDetails(userDetailRequest.username)
                 .thenApplyAsync(
                         userDetails -> {
                             ObjectMapper mapper = new ObjectMapper();
@@ -73,8 +102,13 @@ public class UserDetailsActor extends AbstractActor{
                 );
     }
 
-    private void processUserProfileResult(JsonNode userProfileInfo) {
-        sessionActor.tell(new Messages.UserDetails(userProfileInfo), getSelf());
+    /**
+     * sends the user details JsonNode to the supervisorActor
+     * @param userDetails JsonNode to be displayed on the page
+     * @author Sourav Uttam Sinha 40175660
+     */
+    private void processUserDetails(JsonNode userDetails) {
+        supervisorActor.tell(new Messages.UserDetails(userDetails), getSelf());
     }
 
 }

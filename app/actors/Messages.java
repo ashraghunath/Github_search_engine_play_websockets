@@ -1,6 +1,8 @@
 package actors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+//import org.json.HTTP;
+import play.mvc.Http;
 
 /**
  * Message class for all the actors
@@ -29,7 +31,9 @@ public class Messages {
     public static final class SearchPageActor{
         public final String phrase;
 
-        public SearchPageActor(String phrase) {
+
+        public SearchPageActor( String phrase) {
+
             this.phrase = phrase;
         }
     }

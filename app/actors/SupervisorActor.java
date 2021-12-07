@@ -5,11 +5,11 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import play.cache.AsyncCacheApi;
 import services.GithubService;
-
-import java.util.Objects;
 
 
 /**
@@ -22,7 +22,6 @@ public class SupervisorActor extends AbstractActor {
     private final ActorRef wsOut;
     private GithubService githubService;
     private final AsyncCacheApi asyncCacheApi;
-
     private ActorRef repositoryDetailsActor = null;
     private ActorRef issueStatisticsActor = null;
     private ActorRef searchPageActor = null;
@@ -35,7 +34,6 @@ public class SupervisorActor extends AbstractActor {
         this.githubService = githubService;
         this.asyncCacheApi = asyncCacheApi;
     }
-
 
     public static Props props(final ActorRef wsout, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         return Props.create(SupervisorActor.class, wsout, githubService, asyncCacheApi);
@@ -63,8 +61,9 @@ public class SupervisorActor extends AbstractActor {
     }
 
 
-    private void processRequest(JsonNode receivedJson) {
+    private void processRequest(JsonNode receivedJson) throws JsonProcessingException {
     	log.info(receivedJson.asText());
+        ObjectMapper mapper = new ObjectMapper();
         if(receivedJson.has("searchPage")) {
 
             if(searchPageActor==null)
@@ -87,7 +86,6 @@ public class SupervisorActor extends AbstractActor {
         else if(receivedJson.has("topicsDetails")){
             String topic_name = receivedJson.get("topicsDetails").asText();
             if(topicsSearchActor == null){
-                //System.out.println("A topics actor created");
                 topicsSearchActor = getContext().actorOf(TopicsActor.props(self(),githubService,asyncCacheApi));
             }
             topicsSearchActor.tell(new Messages.GetRepositoryfromTopic(topic_name),getSelf());
@@ -96,7 +94,7 @@ public class SupervisorActor extends AbstractActor {
             String username = receivedJson.get("username").asText();
             if(userDetailsActor == null) {
                 log.info("Creating a user profile actor.");
-                userDetailsActor = getContext().actorOf(UserDetailsActor.props(self(), githubService, asyncCacheApi));
+                userDetailsActor = getContext().actorOf(UserDetailsActor.props(self(), githubService));
             }
             userDetailsActor.tell(new Messages.GetUserDetailsActor(username), getSelf());
         }
@@ -105,16 +103,16 @@ public class SupervisorActor extends AbstractActor {
             String userName = receivedJson.get("userName").asText();
             if(issueStatisticsActor == null) {
                 log.info("Creating a issue statistics actor.");
-                issueStatisticsActor = getContext().actorOf(IssueStatisticsActor.props(self(), githubService, asyncCacheApi));
+                issueStatisticsActor = getContext().actorOf(IssueStatisticsActor.props(self(), githubService));
             }
             issueStatisticsActor.tell(new Messages.GetIssueStatisticsActor(userName, repositoryName), getSelf());
         }
-        else if (receivedJson.has("commitStatisticsPage")) {
+        else if(receivedJson.has("commitStatisticsPage")) {
             System.out.println(receivedJson);
             String repositoryName = receivedJson.get("repositoryName").asText();
-            String userName = receivedJson.get("userName") .asText();
-            if (Objects.isNull(commitStatisticsActor)) {
-                log.info("Creating a commit statistics actor.");
+            String userName = receivedJson.get("userName").asText();
+            System.out.println(repositoryName + userName);
+            if(commitStatisticsActor == null) {
                 System.out.println("Creating a commit statistics actor.");
                 commitStatisticsActor = getContext().actorOf(CommitStatisticsActor.props(self(), githubService));
             }

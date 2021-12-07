@@ -6,10 +6,15 @@ import akka.testkit.javadsl.TestKit;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.IssueWordStatistics;
 import models.RepositoryDetails;
+import models.SearchResults;
+import models.UserDetails;
 import models.UserRepositoryTopics;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.SearchRepository;
+import org.eclipse.egit.github.core.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,10 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import play.cache.AsyncCacheApi;
 import services.GithubService;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -73,6 +75,29 @@ public class SupervisorActorTest {
     }
 
     /**
+     * Test case for UserDetailsActor flow in SupervisorActor
+     */
+    @Test
+    public void supervisorActorTestForUserDetailsFlow() {
+
+        new TestKit(actorSystem) {
+            {
+                Mockito.when(githubServiceMock.getUserDetails(anyString())).thenReturn(userDetailsCompletionStage());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode userData = mapper.createObjectNode();
+                userData.put("userDetails", "sauravus");
+                userData.put("username", "sauravus");
+                final ActorRef supervisorActor = actorSystem.actorOf(
+                        SupervisorActor.props(testProbe.getRef(), githubServiceMock,asyncCacheApi));
+                supervisorActor.tell(userData, testProbe.getRef());
+                ObjectNode userDetailsJsonNode = testProbe.expectMsgClass(ObjectNode.class);
+                assertEquals("userDetails",userDetailsJsonNode.get("responseType").asText());
+                assertEquals("sauravus",userDetailsJsonNode.get("userDetails").get("name").asText());
+            }
+        };
+    }
+
+    /**
      * Test case for SearchPageActor flow in SupervisorActor
      */
     @Test
@@ -117,6 +142,27 @@ public class SupervisorActorTest {
     }
 
     /**
+     * Mock UserDetails object
+     * @return future of UserDetails
+     */
+    public CompletionStage<UserDetails> userDetailsCompletionStage()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+
+            User user = new User();
+            user.setName("sauravus");
+            Repository repository = new Repository();
+            repository.setName("title");
+            List<Repository> repositories = Arrays.asList(repository);
+            UserDetails userDetails = new UserDetails();
+            userDetails.setUser(user);
+            userDetails.setRepository(repositories);
+            return userDetails;
+
+        });
+    }
+
+    /**
      * Mock searchResult object
      * @return future of Object that gets return on calling search function in github service
      */
@@ -127,6 +173,104 @@ public class SupervisorActorTest {
             Map<String,List<UserRepositoryTopics>> map = new HashMap<>();
             map.put("JAVA AI DL", Arrays.asList(userRepositoryTopics));
             return map;
+        });
+    }
+
+
+
+    /**
+     * Test case for IssueStatisticsActor flow in SupervisorActor
+     */
+    @Test
+    public void supervisorActorTestForIssueWordLevelStats() {
+
+        new TestKit(actorSystem) {
+            {
+                Mockito.when(githubServiceMock.getAllIssues(anyString(), anyString())).thenReturn(issueStatsCompletionStage());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode issueStatData = mapper.createObjectNode();
+
+                issueStatData.put("issueStatisticsPage", "");
+                issueStatData.put("repositoryName", "KP_G05");
+                issueStatData.put("userName", "anushkashetty96");
+
+                //issueStatData.put("issueStatList", "{\"exception\":1,\"reference\":1,\"pointer\":1,\"null\":2,\"bound\":1,\"index\":1,\"out\":1}\n");
+                final ActorRef supervisorActor = actorSystem.actorOf(
+                        SupervisorActor.props(testProbe.getRef(), githubServiceMock,asyncCacheApi));
+                supervisorActor.tell(issueStatData, testProbe.getRef());
+                ObjectNode issueStatsJsonNode = testProbe.expectMsgClass(ObjectNode.class);
+                JsonNode issueStatistics = issueStatsJsonNode.get("issueStatList");
+                assertEquals("issueStatisticsPage",issueStatsJsonNode.get("responseType").asText());
+                assertEquals(2,issueStatistics.get("wordfrequency").get("null").asInt());
+                assertEquals("KP_G05",issueStatsJsonNode.get("respositoryName").asText());
+            }
+        };
+    }
+
+    /**
+     * Mock IssueWordStatistics object
+     * @return future of IssueWordStatistics
+     */
+    public CompletionStage<IssueWordStatistics> issueStatsCompletionStage()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+
+            Map<String,Integer> wordFrequency = new HashMap<>();
+            wordFrequency.put("null",2);
+            wordFrequency.put("pointer",1);
+            wordFrequency.put("exception",1);
+            wordFrequency.put("reference",1);
+            wordFrequency.put("index",1);
+            wordFrequency.put("out",1);
+            wordFrequency.put("bound",1);
+            IssueWordStatistics issueWordStatistics = new IssueWordStatistics(wordFrequency);
+            return issueWordStatistics;
+
+        });
+    }
+
+    /**
+     * Test case for TopicsActor flow in SupervisorActor
+     */
+    @Test
+    public void supervisorActorTestForTopicsSearchFlow() {
+
+        new TestKit(actorSystem) {
+            {
+                Mockito.when(asyncCacheApi.getOrElseUpdate(anyString(),any())).thenReturn(topicsSearchCompletionStage());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode topicData = mapper.createObjectNode();
+                topicData.put("topicsDetails", "java");
+                final ActorRef supervisor = actorSystem.actorOf(
+                        SupervisorActor.props(testProbe.getRef(), githubServiceMock, asyncCacheApi));
+                supervisor.tell(topicData, testProbe.getRef());
+                ObjectNode topicsInfoNode = testProbe.expectMsgClass(ObjectNode.class);
+                //System.out.println("Topics INfo: "+ topicsInfoNode);
+                assertEquals("topicsDetails", topicsInfoNode.get("responseType").asText());
+                List<String> owners = new ArrayList<>();
+                for(JsonNode repository:topicsInfoNode.get("searchProfile").get("repos"))
+                {
+                    owners.add(repository.get("owner").asText());
+                }
+                assertEquals(Arrays.asList("owner1","owner2"),owners);
+            }
+        };
+    }
+
+    public CompletionStage<Object> topicsSearchCompletionStage()
+    {
+        return CompletableFuture.supplyAsync(() -> {
+            SearchResults searchResults = new SearchResults();
+            List<UserRepositoryTopics> searchItem = new ArrayList<>();
+            UserRepositoryTopics userRepositoryTopics1 = new UserRepositoryTopics("owner1","name1");
+            userRepositoryTopics1.setTopics(Arrays.asList("topic1","topic2"));
+            UserRepositoryTopics userRepositoryTopics2 = new UserRepositoryTopics("owner2","name2");
+            userRepositoryTopics2.setTopics(Arrays.asList("topic3","topic4"));
+            searchItem.add(userRepositoryTopics1);
+            searchItem.add(userRepositoryTopics2);
+            searchResults.setKeyword("java");
+            searchResults.setRepos(searchItem);
+            return searchResults;
         });
     }
 }

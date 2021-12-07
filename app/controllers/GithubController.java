@@ -46,7 +46,6 @@ public class GithubController {
 		this.materializer=materializer;
 		this.assetsFinder=assetsFinder;
 		this.httpExecutionContext=httpExecutionContext;
-//		actorSystem.actorOf(TimeActor.props(), "timeActor");
 	}
 	
 	/**
@@ -72,39 +71,6 @@ public class GithubController {
 		return WebSocket.Json.accept(request -> ActorFlow.actorRef(out -> SupervisorActor.props(out, githubService, cache), actorSystem, materializer));
 	}
 
-	/**
-	 * Returns Result View for the Search page after search click
-	 *
-	 * @param request object
-	 * @return Result View for the search page after click
-	 * @author Anmol malhotra 40201452
-	 */
-	public CompletionStage<Result> search(Http.Request request) {
-		DynamicForm form = formFactory.form().bindFromRequest(request);
-		String phrase = form.get("phrase");
-		CompletionStage<Result> resultCompletionStage = githubService
-				.searchResults(request, phrase).thenApply(map -> ok(views.html.index.render(request,map)));
-		return resultCompletionStage;
-	}
-
-	/**
-	 * Returns the Repository details for the provided username and repository name
-	 * 
-	 * @author Ashwin Raghunath 40192120
-	 * @param userName       the user who owns the repository.
-	 * @param repositoryName the name of the repository to be searched for.
-	 * @return represents the async response containing the
-	 *         process stage of Result object for the repository details
-	 */
-	public CompletionStage<Result> getRepositoryDetails(String userName, String repositoryName) {
-
-		CompletionStage<Result> results = cache
-				.getOrElseUpdate((userName +"."+repositoryName),
-						() -> githubService.getRepositoryDetails(userName, repositoryName)
-				.thenApplyAsync(repository -> ok(views.html.repository.render(repository))));
-		return results;
-	}
-
 
 	/**
 	 * Returns the Repository Issues for the provided username and repository name
@@ -122,36 +88,7 @@ public class GithubController {
 		return resultCompletionStage;
 	}
 
-	/** Returns the Repositories that contains the given topic
-	 * @author Trusha Patel
-	 * @param topic_name of the repository
-	 * @return represents the async response containing the process stage of Result
-	 * 			object for the repository details matching the topic
-	 */
 
-	public CompletionStage<Result> getReposByTopics(String topic_name) {
-		CompletionStage<Result> results = githubService.getReposByTopics(topic_name)
-				.thenApplyAsync(repository -> ok(views.html.topics2.render(topic_name,
-								repository.get("searchProfile"),assetsFinder)),
-						httpExecutionContext.current());
-		return results;
-
-	}
-
-	/** Returns the User Details for the provided user
-	 * @author Sourav Uttam Sinha 40175660
-	 * @param userName the user who owns the repository.
-	 * @return represents the async response containing the process stage of Result object for the user details
-	 */
-
-	public CompletionStage<Result> getUserDetails(String userName) {
-
-		CompletionStage<Result> results = cache
-				.getOrElseUpdate((userName + ".getUserDetails"),
-						() -> githubService.getUserDetails(userName)
-								.thenApplyAsync(user -> ok(views.html.user.render(user))));
-		return results;
-	}
 
 	/**
 	 * Returns the repository commits' details for the given repository

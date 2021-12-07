@@ -60,39 +60,6 @@ public class GithubControllerTest extends WithApplication {
         Result result = route(app, request);
         assertEquals(OK, result.status());
     }
-    /** Unit test for resting the endpoint /getRepositoryDetails/:userName/:repositoryName
-     * @author Ashwin Raghunath 40192120
-     */
-    @Test
-    public void getRepositoryDetailsTest()
-    {
-        running(provideApplication(), () -> {
-            when(cache.getOrElseUpdate(any(),any())).thenReturn(repositoryDetailsObject());
-            CompletionStage<Result> repositoryDetails = githubController.getRepositoryDetails("play", "play");
-            try {
-                repositoryDetails.toCompletableFuture().get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            assertTrue(repositoryDetails.toCompletableFuture().isDone());
-        });
-    }
-
-    /** mock object for testing getRepositoryDetailsTest
-     * @author Ashwin Raghunath 40192120
-     * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
-     */
-    private CompletionStage<Object> repositoryDetailsObject(){
-        return CompletableFuture.supplyAsync( () -> {
-            RepositoryDetails repositoryDetails = new RepositoryDetails();
-            Repository repository = new Repository();
-            repository.setName("MockRepoName");
-            repositoryDetails.setRepository(repository);
-            return repositoryDetails;
-        });
-    }
 
     /** Unit test for resting the endpoint /getRepositoryIssues/:userName/:repositoryName   
      * @author Anushka Shetty 40192371
@@ -137,79 +104,6 @@ public class GithubControllerTest extends WithApplication {
         });
     }
 
-    /** Unit test for resting the endpoint /getUserDetails/:userName
-     * @author Sourav Uttam Sinha 40175660
-     */
-    @Test
-    public void getUserDetailsTest()
-    {
-        running(provideApplication(), () -> {
-            when(cache.getOrElseUpdate(any(),any())).thenReturn(userDetailsObject());
-            CompletionStage<Result> userDetails = githubController.getUserDetails("userName");
-            assertTrue(userDetails.toCompletableFuture().isDone());
-        });
-    }
 
-
-    /** mock object for testing getRepositoryDetailsTest
-     * @author Sourav Uttam Sinha 40175660
-     * @return CompletionStage<RepositoryDetails> represents the async response containing the process stage of RepositoryDetails object
-     */
-    private CompletionStage<Object> userDetailsObject(){
-        return CompletableFuture.supplyAsync( () -> {
-            UserDetails userDetails = new UserDetails();
-            User user = new User();
-            user.setName("MockUserName");
-            userDetails.setUser(user);
-            return userDetails;
-        });
-    }
-
-    /**
-     * Unit Test for testing the endpoint /getReposByTopics/:topicName
-     * @author Trusha Patel 40192614
-     */
-
-//    @Test
-//    public void getReposByTopicsTest()
-//    {
-//        running(provideApplication(), () -> {
-//            when(githubService.getReposByTopics(anyString())).thenReturn(searchedRepositoriesObject());
-//            CompletionStage<Result> repositories = githubController.getReposByTopics("mocktopic");
-//            try {
-//                Result result = repositories.toCompletableFuture().get();
-//                assertEquals(HttpStatus.SC_OK,result.status());
-//                assertEquals("text/html",result.contentType().get());
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            } catch (ExecutionException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//
-//    }
-
-    /**
-     *
-     *  mock object for testing getReposByTopicsTest
-     * @author Trusha Patel
-     * @return CompletionStage<Object> represents the async response containing the process stage of SearchedRepository
-     */
-    private CompletionStage<List<UserRepositoryTopics>> searchedRepositoriesObject(){
-        return CompletableFuture.supplyAsync(() -> {
-            List<UserRepositoryTopics> searchItem = new ArrayList<>();
-            UserRepositoryTopics searchMock1 = mock(UserRepositoryTopics.class);
-            when(searchMock1.getOwner()).thenReturn("user1");
-            when(searchMock1.getName()).thenReturn("repo1");
-            when(searchMock1.getTopics()).thenReturn(Arrays.asList("topic1","topic2"));
-            UserRepositoryTopics searchMock2 = mock(UserRepositoryTopics.class);
-            when(searchMock2.getOwner()).thenReturn("user2");
-            when(searchMock2.getName()).thenReturn("repo2");
-            when(searchMock2.getTopics()).thenReturn(Arrays.asList("topic3","topic4"));
-            searchItem.add(searchMock1);
-            searchItem.add(searchMock2);
-            return searchItem;
-        });
-    }
 }
 

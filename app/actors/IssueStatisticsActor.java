@@ -29,19 +29,30 @@ import akka.actor.Props;
 import models.IssueWordStatistics;
 import play.cache.AsyncCacheApi;
 import services.GithubService;
-
+/**
+ * Actor to fetch the  for a given repository and userName
+ * @author Anushka R Shetty
+ */
 public class IssueStatisticsActor extends AbstractActor {
 
 	private ActorRef sessionActor;
 	private GithubService githubService;
-	private AsyncCacheApi asyncCacheApi;
 
-	public IssueStatisticsActor(ActorRef sessionActor, GithubService githubService,AsyncCacheApi asyncCacheApi) {
+	/**
+	 * Constructor needed in order create actor using Props method
+	 * @author Anushka R Shetty
+	 * @param sessionActor reference of the supervisor
+	 * @param githubService service used to fetch issue word level statistics
+	 */
+	public IssueStatisticsActor(ActorRef sessionActor, GithubService githubService) {
 		this.sessionActor = sessionActor;
 		this.githubService = githubService;
-		this.asyncCacheApi = asyncCacheApi;
 	}
-
+	/**
+	 * Matches the incoming message for the IssueStatisticsActor
+	 * @author Anushka R Shetty
+	 * @return Builder object after formation
+	 */
 	@Override
 	public Receive createReceive() {
 		// TODO Auto-generated method stub
@@ -50,16 +61,31 @@ public class IssueStatisticsActor extends AbstractActor {
 		}).build();
 	}
 
-	public static Props props(ActorRef  supervisorActor, GithubService gitHubAPI, AsyncCacheApi asyncCacheApi) {
-		return Props.create(IssueStatisticsActor.class, supervisorActor, gitHubAPI, asyncCacheApi);
+	/**
+	 * Props method of akka to create the actor
+	 * @author Anushka R Shetty
+	 * @param supervisorActor actor reference of the supervisor
+	 * @param githubService service used to fetch issue word level statistics
+	 * @return
+	 */
+	public static Props props(ActorRef  supervisorActor, GithubService githubService) {
+		return Props.create(IssueStatisticsActor.class, supervisorActor, githubService);
 	}
 
-
+	/**
+	 * Runs on initialization of IssueStatisticsActor
+	 */
 	@Override
 	public void preStart() {
 		System.out.println("Issue Statistics actor created.");
 	}
 
+	/** calls the githubService and fetches the JsonNode result of the issue word level statistics
+	 * @author Anushka R Shetty
+	 * @param issueWordLevelStats request object consisting username and repositoryname
+	 * @return JsonNode of the issue word level statistics
+	 * @throws Exception
+	 */
 	private CompletionStage<JsonNode> onGetIssueStatistics(Messages.GetIssueStatisticsActor issueWordLevelStats)
 			throws Exception {
 
@@ -80,6 +106,11 @@ public class IssueStatisticsActor extends AbstractActor {
 				);
 	}
 
+	/**
+	 * sends the issue word level statistics JsonNode to the supervisorActor
+	 * @param issueWordLevelStats JsonNode to be displayed on the page
+	 * @author Anushka R Shetty
+	 */
 	private void processIssueStatisticsResult(JsonNode issueWordLevelStats) {
 		sessionActor.tell(new Messages.IssueStatistics(issueWordLevelStats), getSelf());
 	}
