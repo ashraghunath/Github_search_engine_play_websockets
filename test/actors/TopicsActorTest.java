@@ -25,8 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Test class for SearchPageActor
- * @author Ashwin Raghunath
+ * Class to test the TopicsActor
+ * @author Trusha Patel
  */
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class TopicsActorTest {
@@ -35,6 +35,10 @@ public class TopicsActorTest {
     private static TestKit testProbe;
     private static GithubService githubServiceMock;
     private static AsyncCacheApi asyncCacheApi;
+
+    /**
+     * Overrides the API call with the Mock API Call class
+     */
 
     @Before
     public  void setup() {
@@ -72,7 +76,8 @@ public class TopicsActorTest {
 
     /**
      * Mock searchResult object
-     * @return future of Object that gets return on calling search function in github service
+     * @return Future of object returned on calling GithubService's getReposByTopics function
+     *
      */
     public CompletionStage<Object> TopicStageSearch()
     {
