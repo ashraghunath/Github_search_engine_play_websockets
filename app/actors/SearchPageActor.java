@@ -1,5 +1,6 @@
 package actors;
 
+import Helper.SessionHelper;
 import akka.actor.AbstractActor;
 import akka.actor.AbstractActorWithTimers;
 import akka.actor.ActorRef;
@@ -7,11 +8,15 @@ import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.SearchResults;
 import play.cache.AsyncCacheApi;
 import play.mvc.Http;
 import scala.concurrent.duration.FiniteDuration;
 import services.GithubService;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
@@ -22,16 +27,19 @@ import java.util.concurrent.TimeUnit;
 
 public class SearchPageActor extends AbstractActorWithTimers {
 
+    // Acts as user level cache
+    private String sessionKey;
     private ActorRef sessionActor;
     private GithubService githubService;
     private AsyncCacheApi asyncCacheApi;
+    private SessionHelper sessionHelper;
 
 
     public SearchPageActor(ActorRef sessionActor, GithubService githubService, AsyncCacheApi asyncCacheApi) {
         this.sessionActor = sessionActor;
         this.githubService = githubService;
         this.asyncCacheApi=asyncCacheApi;
-
+        this.sessionHelper = new SessionHelper();
     }
 
     public static Props props(ActorRef sessionActor, GithubService githubService, AsyncCacheApi asyncCacheApi) {
@@ -40,6 +48,7 @@ public class SearchPageActor extends AbstractActorWithTimers {
 
     @Override
     public void preStart() {
+        sessionKey = sessionHelper.generateSessionValue();
         System.out.println("SearchPageActor actor created.");
     }
 
@@ -55,8 +64,7 @@ public class SearchPageActor extends AbstractActorWithTimers {
     }
 
     private CompletionStage<JsonNode> onGetSearch(Messages.SearchPageActor searchPageActor) throws Exception {
-        return asyncCacheApi.getOrElseUpdate(searchPageActor.phrase,
-                        () -> githubService.searchResultsUsingActors(searchPageActor.phrase))
+        return  githubService.searchResultsUsingActors(searchPageActor.phrase, sessionKey)
                 .thenApplyAsync(
                         searchResults -> {
                             ObjectMapper mapper = new ObjectMapper();

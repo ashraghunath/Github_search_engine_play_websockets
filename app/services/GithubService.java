@@ -43,7 +43,7 @@ public class GithubService {
 	private Config config;
 	private CommitService commitService;
 	private CommitStats commitStats;
-	Map<String, List<UserRepositoryTopics>> searchSessionMap = new LinkedHashMap<>();
+	Map<String, Map<String, List<UserRepositoryTopics>>> searchSessionMap = new LinkedHashMap<>();
 
 	@Inject
 	public GithubService(Config config) {
@@ -227,8 +227,12 @@ public class GithubService {
 		});
 	}
 
-	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResultsUsingActors(String phrase) {
+	public CompletionStage<Map<String, List<UserRepositoryTopics>>> searchResultsUsingActors(String phrase, String sessionKey) {
+		Map<String, List<UserRepositoryTopics>> searchMap = new LinkedHashMap<>();
+		Map<String, List<UserRepositoryTopics>> phraseList = searchSessionMap.get(sessionKey) != null ?
+				searchSessionMap.get(sessionKey) : new LinkedHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
+
 			try {
 				searchRepositoryList = repositoryService.searchRepositories(phrase, 0).stream()
 						.sorted(Comparator.comparing(SearchRepository::getPushedAt).reversed()).limit(10)
@@ -245,15 +249,19 @@ public class GithubService {
 				userRepositoryTopicsList.add(userRepositoryTopics);
 			}
 
-			Map<String, List<UserRepositoryTopics>> reverseMap = new LinkedHashMap<>(searchSessionMap);
-			searchSessionMap.clear();
-			searchSessionMap.put(phrase, userRepositoryTopicsList);
-			searchSessionMap.putAll(reverseMap);
-
-//			searchSessionMap.put(phrase,userRepositoryTopicsList);
-			return searchSessionMap;
+			Map<String, List<UserRepositoryTopics>> reverseMap = new LinkedHashMap<>(phraseList);
+			phraseList.clear();
+			phraseList.put(phrase, userRepositoryTopicsList);
+			phraseList.putAll(reverseMap);
+     		searchSessionMap.put(sessionKey,phraseList);
+			if(searchSessionMap.containsKey(sessionKey))
+				searchMap.putAll(searchSessionMap.get(sessionKey));
+			return searchMap;
 
 		});
+
+
+
 	}
 
 	/**
