@@ -1,4 +1,4 @@
-# Project for the course - SOEN 6441 - Concordia university
+# Github search engine
 
 # Requirements
 1. Java Development Kit (JDK) 8 or higher
