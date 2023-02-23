@@ -4,8 +4,6 @@
 1. Java Development Kit (JDK) 8 or higher
 2. sbt (Scala Build Tool)
 3. Play Framework 2.6 or higher
-4. Git
-5. GitHub API token
 
 # Installation
 1. Clone the repository to your local machine.
